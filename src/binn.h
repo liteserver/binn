@@ -8,9 +8,38 @@
 #define BINN_H
 
 #ifdef _WIN32
-#include <windows.h>
+ #include <windows.h>
 #else
-#include "bool.h"
+
+ #ifndef NULL
+ #ifdef __cplusplus
+  #define NULL    0
+ #else
+  #define NULL    ((void *)0)
+ #endif
+ #endif
+
+ #ifndef TRUE
+ #define TRUE  1
+ #endif
+
+ #ifndef FALSE
+ #define FALSE 0
+ #endif
+
+ #ifndef BOOL
+ typedef int BOOL;
+ #endif
+
+ #ifndef APIENTRY
+ #ifdef _WIN32
+  #define APIENTRY __stdcall
+ #else
+  //#define APIENTRY __attribute__((stdcall))
+  #define APIENTRY 
+ #endif
+ #endif
+
 #endif
 
 #ifdef _WIN32

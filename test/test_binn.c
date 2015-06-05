@@ -1301,7 +1301,7 @@ void test3() {
 
   type = 0; size = 0;
   pstr = binn_list_read(ptr, 2, &type, &size);
-  assert(pstr == NULL);
+  assert(pstr != NULL);
   assert(type == BINN_NULL);
   //assert(size > 0);
   //assert(strcmp(pstr, "this is the value") == 0);
@@ -1382,7 +1382,7 @@ void test3() {
 
   type = 0; size = 0;
   pstr = binn_map_read(ptr, 99000, &type, &size);
-  assert(pstr == NULL);
+  assert(pstr != NULL);
   assert(type == BINN_NULL);
   //assert(size > 0);
   //assert(strcmp(pstr, "this is the value") == 0);
@@ -1463,7 +1463,7 @@ void test3() {
 
   type = 0; size = 0;
   pstr = binn_object_read(ptr, "key0", &type, &size);
-  assert(pstr == NULL);
+  assert(pstr != NULL);
   assert(type == BINN_NULL);
   //assert(size > 0);
   //assert(strcmp(pstr, "this is the value") == 0);
