@@ -201,10 +201,12 @@ struct binn_struct {
   int    header;     // this struct header holds the magic number (BINN_MAGIC) that identifies this memory block as a binn structure
   BOOL   allocated;  // the struct can be allocated using malloc_fn() or can be on the stack
   BOOL   writable;   // did it was create for writing? it can use the pbuf if not unified with ptr
+  BOOL   dirty;      // the container header is not written to the buffer
   //
   void  *pbuf;       // use *ptr below?
   BOOL   pre_allocated;
   int    alloc_size;
+  int    used_size;
   //
   int    type;
   void  *ptr;
@@ -284,7 +286,7 @@ BOOL   APIENTRY binn_object_set(binn *obj, char *key, int type, void *pvalue, in
 // release memory
 
 void   APIENTRY binn_free(binn *item);
-void   APIENTRY binn_release(binn *item); // free the binn structure but keeps the binn buffer allocated. use the free function to release the buffer later
+void * APIENTRY binn_release(binn *item); // free the binn structure but keeps the binn buffer allocated, returning a pointer to it. use the free function to release the buffer later
 
 
 // --- CREATING VALUES ---------------------------------------------------
@@ -592,7 +594,7 @@ ALWAYS_INLINE BOOL binn_list_add_object(binn *list, void *obj) {
   return binn_list_add(list, BINN_OBJECT, binn_ptr(obj), binn_size(obj));
 }
 ALWAYS_INLINE BOOL binn_list_add_value(binn *list, binn *value) {
-  return binn_list_add(list, value->type, binn_ptr(value), value->size);
+  return binn_list_add(list, value->type, binn_ptr(value), binn_size(value));
 }
 
 /*************************************************************************************/
@@ -649,7 +651,7 @@ ALWAYS_INLINE BOOL binn_map_set_object(binn *map, int id, void *obj) {
   return binn_map_set(map, id, BINN_OBJECT, binn_ptr(obj), binn_size(obj));
 }
 ALWAYS_INLINE BOOL binn_map_set_value(binn *map, int id, binn *value) {
-  return binn_map_set(map, id, value->type, binn_ptr(value), value->size);
+  return binn_map_set(map, id, value->type, binn_ptr(value), binn_size(value));
 }
 
 /*************************************************************************************/
@@ -706,7 +708,7 @@ ALWAYS_INLINE BOOL binn_object_set_object(binn *obj, char *key, void *obj2) {
   return binn_object_set(obj, key, BINN_OBJECT, binn_ptr(obj2), binn_size(obj2));
 }
 ALWAYS_INLINE BOOL binn_object_set_value(binn *obj, char *key, binn *value) {
-  return binn_object_set(obj, key, value->type, binn_ptr(value), value->size);
+  return binn_object_set(obj, key, value->type, binn_ptr(value), binn_size(value));
 }
 
 /*************************************************************************************/

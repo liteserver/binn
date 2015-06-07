@@ -8,8 +8,8 @@
 
 #define BINN_MAGIC            0x1F22B11F
 
-#define BINN_HEADER_SIZE      9  // [1:type][4:size][4:count]
-#define MIN_BINN_SIZE         BINN_HEADER_SIZE
+#define MAX_BINN_HEADER       9  // [1:type][4:size][4:count]
+#define MIN_BINN_SIZE         3  // [1:type][1:size][1:count]
 #define CHUNK_SIZE            256  // 1024
 
 extern void* (*malloc_fn)(int len);
@@ -319,8 +319,8 @@ void test1() {
   assert(obj1->type == BINN_LIST);
   assert(obj1->count == 0);
   assert(obj1->pbuf != NULL);
-  assert(obj1->alloc_size > MIN_BINN_SIZE);
-  assert(obj1->size == MIN_BINN_SIZE);
+  assert(obj1->alloc_size > MAX_BINN_HEADER);
+  assert(obj1->used_size == MAX_BINN_HEADER);
   assert(obj1->pre_allocated == FALSE);
 
   binn_free(obj1);
@@ -342,24 +342,24 @@ void test1() {
   assert(list->type == BINN_LIST);
   assert(list->count == 0);
   assert(list->pbuf != NULL);
-  assert(list->alloc_size > MIN_BINN_SIZE);
-  assert(list->size == MIN_BINN_SIZE);
+  assert(list->alloc_size > MAX_BINN_HEADER);
+  assert(list->used_size == MAX_BINN_HEADER);
   assert(list->pre_allocated == FALSE);
 
   assert(map->header == BINN_MAGIC);
   assert(map->type == BINN_MAP);
   assert(map->count == 0);
   assert(map->pbuf != NULL);
-  assert(map->alloc_size > MIN_BINN_SIZE);
-  assert(map->size == MIN_BINN_SIZE);
+  assert(map->alloc_size > MAX_BINN_HEADER);
+  assert(map->used_size == MAX_BINN_HEADER);
   assert(map->pre_allocated == FALSE);
 
   assert(obj->header == BINN_MAGIC);
   assert(obj->type == BINN_OBJECT);
   assert(obj->count == 0);
   assert(obj->pbuf != NULL);
-  assert(obj->alloc_size > MIN_BINN_SIZE);
-  assert(obj->size == MIN_BINN_SIZE);
+  assert(obj->alloc_size > MAX_BINN_HEADER);
+  assert(obj->used_size == MAX_BINN_HEADER);
   assert(obj->pre_allocated == FALSE);
 
 
@@ -376,7 +376,7 @@ void test1() {
   assert(obj1->count == 0);
   assert(obj1->pbuf != NULL);
   assert(obj1->alloc_size == fix_size);
-  assert(obj1->size == MIN_BINN_SIZE);
+  assert(obj1->used_size == MAX_BINN_HEADER);
   assert(obj1->pre_allocated == TRUE);
 
 
@@ -642,24 +642,24 @@ void test2() {
   assert(list->type == BINN_LIST);
   assert(list->count == 1);
   assert(list->pbuf != NULL);
-  assert(list->alloc_size > MIN_BINN_SIZE);
-  assert(list->size > MIN_BINN_SIZE);
+  assert(list->alloc_size > MAX_BINN_HEADER);
+  assert(list->used_size > MAX_BINN_HEADER);
   assert(list->pre_allocated == FALSE);
 
   assert(map->header == BINN_MAGIC);
   assert(map->type == BINN_MAP);
   assert(map->count == 1);
   assert(map->pbuf != NULL);
-  assert(map->alloc_size > MIN_BINN_SIZE);
-  assert(map->size > MIN_BINN_SIZE);
+  assert(map->alloc_size > MAX_BINN_HEADER);
+  assert(map->used_size > MAX_BINN_HEADER);
   assert(map->pre_allocated == FALSE);
 
   assert(obj->header == BINN_MAGIC);
   assert(obj->type == BINN_OBJECT);
   assert(obj->count == 1);
   assert(obj->pbuf != NULL);
-  assert(obj->alloc_size > MIN_BINN_SIZE);
-  assert(obj->size > MIN_BINN_SIZE);
+  assert(obj->alloc_size > MAX_BINN_HEADER);
+  assert(obj->used_size > MAX_BINN_HEADER);
   assert(obj->pre_allocated == FALSE);
 
 
@@ -1038,7 +1038,7 @@ void test2() {
 
 void test3() {
   static const int fix_size = 512;
-  int i, id, type, count, size, blobsize;
+  int i, id, type, count, size, header_size, blobsize;
   char *ptr, *p2, *pstr, key[256];
   binn *list, *map, *obj, *obj1;
   binn value;
@@ -1066,24 +1066,24 @@ void test3() {
   assert(list->type == BINN_LIST);
   assert(list->count == 0);
   assert(list->pbuf != NULL);
-  assert(list->alloc_size > MIN_BINN_SIZE);
-  assert(list->size == MIN_BINN_SIZE);
+  assert(list->alloc_size > MAX_BINN_HEADER);
+  assert(list->used_size == MAX_BINN_HEADER);
   assert(list->pre_allocated == FALSE);
 
   assert(map->header == BINN_MAGIC);
   assert(map->type == BINN_MAP);
   assert(map->count == 0);
   assert(map->pbuf != NULL);
-  assert(map->alloc_size > MIN_BINN_SIZE);
-  assert(map->size == MIN_BINN_SIZE);
+  assert(map->alloc_size > MAX_BINN_HEADER);
+  assert(map->used_size == MAX_BINN_HEADER);
   assert(map->pre_allocated == FALSE);
 
   assert(obj->header == BINN_MAGIC);
   assert(obj->type == BINN_OBJECT);
   assert(obj->count == 0);
   assert(obj->pbuf != NULL);
-  assert(obj->alloc_size > MIN_BINN_SIZE);
-  assert(obj->size == MIN_BINN_SIZE);
+  assert(obj->alloc_size > MAX_BINN_HEADER);
+  assert(obj->used_size == MAX_BINN_HEADER);
   assert(obj->pre_allocated == FALSE);
 
 
@@ -1100,7 +1100,7 @@ void test3() {
   assert(obj1->count == 0);
   assert(obj1->pbuf != NULL);
   assert(obj1->alloc_size == fix_size);
-  assert(obj1->size == MIN_BINN_SIZE);
+  assert(obj1->used_size == MAX_BINN_HEADER);
   assert(obj1->pre_allocated == TRUE);
 
 
@@ -1617,9 +1617,10 @@ void test3() {
   ptr = binn_ptr(obj);
   assert(ptr != NULL);
   // test the header
-  assert(IsValidBinnHeader(ptr, &type, &count, &size) == TRUE);
+  assert(IsValidBinnHeader(ptr, &type, &count, &size, &header_size) == TRUE);
   assert(type == BINN_OBJECT);
   assert(count == 15);
+  assert(header_size >= MIN_BINN_SIZE && header_size <= MAX_BINN_HEADER);
   assert(size > MIN_BINN_SIZE);
   assert(size == obj->size);
   // test all the buffer
@@ -1632,9 +1633,10 @@ void test3() {
   ptr = binn_ptr(map);
   assert(ptr != NULL);
   // test the header
-  assert(IsValidBinnHeader(ptr, &type, &count, &size) == TRUE);
+  assert(IsValidBinnHeader(ptr, &type, &count, &size, &header_size) == TRUE);
   assert(type == BINN_MAP);
   assert(count == 11);
+  assert(header_size >= MIN_BINN_SIZE && header_size <= MAX_BINN_HEADER);
   assert(size > MIN_BINN_SIZE);
   assert(size == map->size);
   // test all the buffer
@@ -1647,15 +1649,17 @@ void test3() {
   ptr = binn_ptr(list);
   assert(ptr != NULL);
   // test the header
-  assert(IsValidBinnHeader(ptr, &type, &count, &size) == TRUE);
+  assert(IsValidBinnHeader(ptr, &type, &count, &size, &header_size) == TRUE);
   assert(type == BINN_LIST);
   assert(count == 14);
+  assert(header_size >= MIN_BINN_SIZE && header_size <= MAX_BINN_HEADER);
   assert(size > MIN_BINN_SIZE);
   assert(size == list->size);
   // test all the buffer
   assert(binn_is_valid(ptr, &type, &count, &size) == TRUE);
   assert(type == BINN_LIST);
   assert(count == 14);
+  assert(header_size >= MIN_BINN_SIZE && header_size <= MAX_BINN_HEADER);
   assert(size > MIN_BINN_SIZE);
   assert(size == list->size);
 
