@@ -1973,39 +1973,30 @@ BOOL copy_raw_value(void *psource, void *pdest, int data_store) {
 /*************************************************************************************/
 
 BOOL copy_int_value(void *psource, void *pdest, int source_type, int dest_type) {
-  unsigned char vuint8; char vint8;
-  unsigned short vuint16; short vint16;
-  unsigned int vuint32; int vint32;
   uint64 vuint64; int64 vint64;
 
   switch (source_type) {
   case BINN_INT8:
-    vint8 = *(char *)psource;
-    vint64 = vint8;
+    vint64 = *(signed char *)psource;
     break;
   case BINN_INT16:
-    vint16 = *(short *)psource;
-    vint64 = vint16;
+    vint64 = *(short *)psource;
     break;
   case BINN_INT32:
-    vint32 = *(int *)psource;
-    vint64 = vint32;
+    vint64 = *(int *)psource;
     break;
   case BINN_INT64:
     vint64 = *(int64 *)psource;
     break;
 
   case BINN_UINT8:
-    vuint8 = *(unsigned char *)psource;
-    vuint64 = vuint8;
+    vuint64 = *(unsigned char *)psource;
     break;
   case BINN_UINT16:
-    vuint16 = *(unsigned short *)psource;
-    vuint64 = vuint16;
+    vuint64 = *(unsigned short *)psource;
     break;
   case BINN_UINT32:
-    vuint32 = *(unsigned int *)psource;
-    vuint64 = vuint32;
+    vuint64 = *(unsigned int *)psource;
     break;
   case BINN_UINT64:
     vuint64 = *(uint64 *)psource;
@@ -2030,18 +2021,15 @@ BOOL copy_int_value(void *psource, void *pdest, int source_type, int dest_type) 
   switch (dest_type) {
   case BINN_INT8:
     if ((vint64 < INT8_MIN) || (vint64 > INT8_MAX)) return FALSE;
-    vint8 = (signed char) vint64;
-    *(char *)pdest = vint8;
+    *(signed char *)pdest = (signed char) vint64;
     break;
   case BINN_INT16:
     if ((vint64 < INT16_MIN) || (vint64 > INT16_MAX)) return FALSE;
-    vint16 = (short) vint64;
-    *(short *)pdest = vint16;
+    *(short *)pdest = (short) vint64;
     break;
   case BINN_INT32:
     if ((vint64 < INT32_MIN) || (vint64 > INT32_MAX)) return FALSE;
-    vint32 = (int) vint64;
-    *(int *)pdest = vint32;
+    *(int *)pdest = (int) vint64;
     break;
   case BINN_INT64:
     *(int64 *)pdest = vint64;
@@ -2049,18 +2037,15 @@ BOOL copy_int_value(void *psource, void *pdest, int source_type, int dest_type) 
 
   case BINN_UINT8:
     if (vuint64 > UINT8_MAX) return FALSE;
-    vuint8 = (unsigned char) vuint64;
-    *(unsigned char *)pdest = vuint8;
+    *(unsigned char *)pdest = (unsigned char) vuint64;
     break;
   case BINN_UINT16:
     if (vuint64 > UINT16_MAX) return FALSE;
-    vuint16 = (unsigned short) vuint64;
-    *(unsigned short *)pdest = vuint16;
+    *(unsigned short *)pdest = (unsigned short) vuint64;
     break;
   case BINN_UINT32:
     if (vuint64 > UINT32_MAX) return FALSE;
-    vuint32 = (unsigned int) vuint64;
-    *(unsigned int *)pdest = vuint32;
+    *(unsigned int *)pdest = (unsigned int) vuint64;
     break;
   case BINN_UINT64:
     *(uint64 *)pdest = vuint64;
@@ -2077,19 +2062,13 @@ BOOL copy_int_value(void *psource, void *pdest, int source_type, int dest_type) 
 /*************************************************************************************/
 
 BOOL copy_float_value(void *psource, void *pdest, int source_type, int dest_type) {
-  float vfloat;
-  double vdouble;
 
   switch (source_type) {
   case BINN_FLOAT32:
-    vfloat = *(float *)psource;
-    vdouble = vfloat;
-    *(double *)pdest = vdouble;
+    *(double *)pdest = *(float *)psource;
     break;
   case BINN_FLOAT64:
-    vdouble = *(double *)psource;
-    vfloat = (float) vdouble;
-    *(float *)pdest = vfloat;
+    *(float *)pdest = (float) *(double *)psource;
     break;
   default:
     return FALSE;
