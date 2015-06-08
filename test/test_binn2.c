@@ -617,8 +617,13 @@ void test_binn_read(void *objptr) {
   // read as value / binn
 
   assert(binn_object_get_value(objptr, "int32", &value) == TRUE);
+#ifndef BINN_DISABLE_COMPRESS_INT
+  assert(value.type == BINN_INT16);
+  assert(value.vint16 == -12345);
+#else
   assert(value.type == BINN_INT32);
   assert(value.vint32 == -12345);
+#endif
 
   assert(binn_object_get_value(objptr, "int16", &value) == TRUE);
   assert(value.type == BINN_INT16);
@@ -1413,13 +1418,22 @@ void test_binn_iter() {
 
   assert(binn_list_next(&iter, &value) == TRUE);
   assert(iter.current == 2);
+#ifndef BINN_DISABLE_COMPRESS_INT
+  assert(value.type == BINN_UINT32);
+#else
   assert(value.type == BINN_INT32);
+#endif
   assert(value.vint32 == 123456789);
 
   assert(binn_list_next(&iter, &value) == TRUE);
   assert(iter.current == 3);
+#ifndef BINN_DISABLE_COMPRESS_INT
+  assert(value.type == BINN_INT8);
+  assert(value.vint8 == -123);
+#else
   assert(value.type == BINN_INT16);
   assert(value.vint16 == -123);
+#endif
 
   assert(binn_list_next(&iter, &value) == TRUE);
   assert(iter.current == 4);
@@ -1505,15 +1519,24 @@ void test_binn_iter() {
 
   assert(binn_object_next(&iter, key, &value) == TRUE);
   assert(iter.current == 2);
+#ifndef BINN_DISABLE_COMPRESS_INT
+  assert(value.type == BINN_UINT32);
+#else
   assert(value.type == BINN_INT32);
+#endif
   assert(value.vint32 == 123456789);
   //printf("%s ", key);
   assert(strcmp(key, "b") == 0);
 
   assert(binn_object_next(&iter, key, &value) == TRUE);
   assert(iter.current == 3);
+#ifndef BINN_DISABLE_COMPRESS_INT
+  assert(value.type == BINN_INT8);
+  assert(value.vint8 == -123);
+#else
   assert(value.type == BINN_INT16);
   assert(value.vint16 == -123);
+#endif
   //printf("%s ", key);
   assert(strcmp(key, "c") == 0);
 
@@ -1619,14 +1642,23 @@ void test_binn_iter() {
 
   assert(binn_map_next(&iter, &id, &value) == TRUE);
   assert(iter.current == 2);
+#ifndef BINN_DISABLE_COMPRESS_INT
+  assert(value.type == BINN_UINT32);
+#else
   assert(value.type == BINN_INT32);
+#endif
   assert(value.vint32 == 123456789);
   assert(id == 55020);
 
   assert(binn_map_next(&iter, &id, &value) == TRUE);
   assert(iter.current == 3);
+#ifndef BINN_DISABLE_COMPRESS_INT
+  assert(value.type == BINN_INT8);
+  assert(value.vint8 == -123);
+#else
   assert(value.type == BINN_INT16);
   assert(value.vint16 == -123);
+#endif
   assert(id == 55030);
 
   assert(binn_map_next(&iter, &id, &value) == TRUE);

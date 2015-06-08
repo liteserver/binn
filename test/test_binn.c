@@ -718,8 +718,14 @@ void test2() {
 
   assert(value.header == BINN_MAGIC);
   assert(value.writable == FALSE);
+  assert(value.allocated == FALSE);
+#ifndef BINN_DISABLE_COMPRESS_INT
+  assert(value.type == BINN_UINT8);
+  assert(value.ptr != &value.vuint8);  // it must return a pointer to the byte in the buffer
+#else
   assert(value.type == BINN_INT32);
   assert(value.ptr == &value.vint);
+#endif
   assert(value.size == 0);
   assert(value.count == 0);
   assert(value.vint == 123);
@@ -730,8 +736,13 @@ void test2() {
 
   assert(value.header == BINN_MAGIC);
   assert(value.writable == FALSE);
+#ifndef BINN_DISABLE_COMPRESS_INT
+  assert(value.type == BINN_UINT16);
+  assert(value.ptr == &value.vuint16);
+#else
   assert(value.type == BINN_INT32);
   assert(value.ptr == &value.vint);
+#endif
   assert(value.size == 0);
   assert(value.count == 0);
   assert(value.vint == 456);
@@ -742,8 +753,13 @@ void test2() {
 
   assert(value.header == BINN_MAGIC);
   assert(value.writable == FALSE);
+#ifndef BINN_DISABLE_COMPRESS_INT
+  assert(value.type == BINN_UINT16);
+  assert(value.ptr == &value.vuint16);
+#else
   assert(value.type == BINN_INT32);
   assert(value.ptr == &value.vint);
+#endif
   assert(value.size == 0);
   assert(value.count == 0);
   assert(value.vint == 789);

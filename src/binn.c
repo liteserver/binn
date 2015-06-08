@@ -349,6 +349,27 @@ BOOL CheckAllocation(binn *item, int add_size) {
 
 /***************************************************************************/
 
+int get_storage_size(int storage_type) {
+
+  switch (storage_type) {
+  case BINN_STORAGE_NOBYTES:
+    return 0;
+  case BINN_STORAGE_BYTE:
+    return 1;
+  case BINN_STORAGE_WORD:
+    return 2;
+  case BINN_STORAGE_DWORD:
+    return 4;
+  case BINN_STORAGE_QWORD:
+    return 8;
+  default:
+    return 0;
+  }
+
+}
+
+/***************************************************************************/
+
 unsigned char * AdvanceDataPos(unsigned char *p) {
   unsigned char byte;
   int  storage_type, DataSize;
@@ -564,6 +585,95 @@ BOOL binn_map_set_raw(binn *item, int id, int type, void *pvalue, int size) {
 
 /***************************************************************************/
 
+#ifndef BINN_DISABLE_COMPRESS_INT
+
+void * compress_int(int *pstorage_type, int *ptype, void *psource) {
+  int storage_type, storage_type2, type, type2=0;
+  int64  vint;
+  uint64 vuint;
+  char *pvalue;
+
+  storage_type = *pstorage_type;
+  if (storage_type == BINN_STORAGE_BYTE) return psource;
+
+  type = *ptype;
+
+  switch (type) {
+  case BINN_INT64:
+  	vint = *(int64*)psource;
+  	goto loc_signed;
+  case BINN_INT32:
+  	vint = *(int*)psource;
+  	goto loc_signed;
+  case BINN_INT16:
+  	vint = *(short*)psource;
+  	goto loc_signed;
+  case BINN_UINT64:
+  	vuint = *(uint64*)psource;
+  	goto loc_positive;
+  case BINN_UINT32:
+  	vuint = *(unsigned int*)psource;
+  	goto loc_positive;
+  case BINN_UINT16:
+  	vuint = *(unsigned short*)psource;
+  	goto loc_positive;
+  }
+
+loc_signed:
+
+  if (vint >= 0) {
+  	vuint = vint;
+  	goto loc_positive;
+  }
+
+//loc_negative:
+
+  if (vint >= INT8_MIN) {
+   	type2 = BINN_INT8;
+  } else
+  if (vint >= INT16_MIN) {
+   	type2 = BINN_INT16;
+  } else
+  if (vint >= INT32_MIN) {
+   	type2 = BINN_INT32;
+  }
+  goto loc_exit;
+
+loc_positive:
+
+  if (vuint <= UINT8_MAX) {
+   	type2 = BINN_UINT8;
+  } else
+  if (vuint <= UINT16_MAX) {
+   	type2 = BINN_UINT16;
+  } else
+  if (vuint <= UINT32_MAX) {
+   	type2 = BINN_UINT32;
+  }
+
+loc_exit:
+
+  pvalue = (char *) psource;
+
+  if ((type2) && (type2 != type)) {
+    *ptype = type2;
+    storage_type2 = binn_get_write_storage(type2);
+    *pstorage_type = storage_type2;
+#if __BYTE_ORDER == __BIG_ENDIAN
+    size1 = get_storage_size(storage_type);
+    size2 = get_storage_size(storage_type2);
+    pvalue += (size1 - size2);
+#endif
+  }
+
+  return pvalue;
+
+}
+
+#endif
+
+/***************************************************************************/
+
 BOOL AddValue(binn *item, int type, void *pvalue, int size) {
   int   int32, ArgSize, storage_type, extra_type;
   short int16;
@@ -583,6 +693,11 @@ BOOL AddValue(binn *item, int type, void *pvalue, int size) {
         return FALSE;
     }
   }
+
+#ifndef BINN_DISABLE_COMPRESS_INT
+	if (type_family(type) == BINN_FAMILY_INT)
+	  pvalue = compress_int(&storage_type, &type, pvalue);
+#endif
 
   switch (storage_type) {
     case BINN_STORAGE_NOBYTES:
