@@ -585,8 +585,6 @@ BOOL binn_map_set_raw(binn *item, int id, int type, void *pvalue, int size) {
 
 /***************************************************************************/
 
-#ifndef BINN_DISABLE_COMPRESS_INT
-
 void * compress_int(int *pstorage_type, int *ptype, void *psource) {
   int storage_type, storage_type2, type, type2=0;
   int64  vint;
@@ -670,8 +668,6 @@ loc_exit:
 
 }
 
-#endif
-
 /***************************************************************************/
 
 BOOL AddValue(binn *item, int type, void *pvalue, int size) {
@@ -694,10 +690,8 @@ BOOL AddValue(binn *item, int type, void *pvalue, int size) {
     }
   }
 
-#ifndef BINN_DISABLE_COMPRESS_INT
-	if (type_family(type) == BINN_FAMILY_INT)
-	  pvalue = compress_int(&storage_type, &type, pvalue);
-#endif
+  if ((type_family(type) == BINN_FAMILY_INT) && (item->disable_int_compression == FALSE))
+    pvalue = compress_int(&storage_type, &type, pvalue);
 
   switch (storage_type) {
     case BINN_STORAGE_NOBYTES:

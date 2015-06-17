@@ -1317,7 +1317,7 @@ void test_virtual_types() {
 
 /*************************************************************************************/
 
-void test_binn_iter() {
+void test_binn_iter(BOOL use_int_compression) {
   binn *list=INVALID_BINN, *list2=INVALID_BINN;
   binn *obj=INVALID_BINN, *map=INVALID_BINN;
   binn_iter iter;
@@ -1329,7 +1329,7 @@ void test_binn_iter() {
   blob_ptr = "key\0value\0\0";
   blob_size = 11;
 
-  printf("testing binn sequential read... ");
+  printf("testing binn sequential read (use_int_compression = %d)... ", use_int_compression);
 
   // create the 
 
@@ -1342,6 +1342,12 @@ void test_binn_iter() {
   assert(list2 != NULL);
   assert(map != NULL);
   assert(obj != NULL);
+
+  if (use_int_compression == FALSE) {
+    list->disable_int_compression = TRUE;
+    map->disable_int_compression = TRUE;
+    obj->disable_int_compression = TRUE;
+  }
 
   assert(binn_list_add_int32(list2, 250) == TRUE);
   assert(binn_list_add_null(list2) == TRUE);
@@ -1418,22 +1424,22 @@ void test_binn_iter() {
 
   assert(binn_list_next(&iter, &value) == TRUE);
   assert(iter.current == 2);
-#ifndef BINN_DISABLE_COMPRESS_INT
-  assert(value.type == BINN_UINT32);
-#else
-  assert(value.type == BINN_INT32);
-#endif
+  if (use_int_compression) {
+    assert(value.type == BINN_UINT32);
+  } else {
+    assert(value.type == BINN_INT32);
+  }
   assert(value.vint32 == 123456789);
 
   assert(binn_list_next(&iter, &value) == TRUE);
   assert(iter.current == 3);
-#ifndef BINN_DISABLE_COMPRESS_INT
-  assert(value.type == BINN_INT8);
-  assert(value.vint8 == -123);
-#else
-  assert(value.type == BINN_INT16);
-  assert(value.vint16 == -123);
-#endif
+  if (use_int_compression) {
+    assert(value.type == BINN_INT8);
+    assert(value.vint8 == -123);
+  } else {
+    assert(value.type == BINN_INT16);
+    assert(value.vint16 == -123);
+  }
 
   assert(binn_list_next(&iter, &value) == TRUE);
   assert(iter.current == 4);
@@ -1519,24 +1525,24 @@ void test_binn_iter() {
 
   assert(binn_object_next(&iter, key, &value) == TRUE);
   assert(iter.current == 2);
-#ifndef BINN_DISABLE_COMPRESS_INT
-  assert(value.type == BINN_UINT32);
-#else
-  assert(value.type == BINN_INT32);
-#endif
+  if (use_int_compression) {
+    assert(value.type == BINN_UINT32);
+  } else {
+    assert(value.type == BINN_INT32);
+  }
   assert(value.vint32 == 123456789);
   //printf("%s ", key);
   assert(strcmp(key, "b") == 0);
 
   assert(binn_object_next(&iter, key, &value) == TRUE);
   assert(iter.current == 3);
-#ifndef BINN_DISABLE_COMPRESS_INT
-  assert(value.type == BINN_INT8);
-  assert(value.vint8 == -123);
-#else
-  assert(value.type == BINN_INT16);
-  assert(value.vint16 == -123);
-#endif
+  if (use_int_compression) {
+    assert(value.type == BINN_INT8);
+    assert(value.vint8 == -123);
+  } else {
+    assert(value.type == BINN_INT16);
+    assert(value.vint16 == -123);
+  }
   //printf("%s ", key);
   assert(strcmp(key, "c") == 0);
 
@@ -1642,23 +1648,23 @@ void test_binn_iter() {
 
   assert(binn_map_next(&iter, &id, &value) == TRUE);
   assert(iter.current == 2);
-#ifndef BINN_DISABLE_COMPRESS_INT
-  assert(value.type == BINN_UINT32);
-#else
-  assert(value.type == BINN_INT32);
-#endif
+  if (use_int_compression) {
+    assert(value.type == BINN_UINT32);
+  } else {
+    assert(value.type == BINN_INT32);
+  }
   assert(value.vint32 == 123456789);
   assert(id == 55020);
 
   assert(binn_map_next(&iter, &id, &value) == TRUE);
   assert(iter.current == 3);
-#ifndef BINN_DISABLE_COMPRESS_INT
-  assert(value.type == BINN_INT8);
-  assert(value.vint8 == -123);
-#else
-  assert(value.type == BINN_INT16);
-  assert(value.vint16 == -123);
-#endif
+  if (use_int_compression) {
+    assert(value.type == BINN_INT8);
+    assert(value.vint8 == -123);
+  } else {
+    assert(value.type == BINN_INT16);
+    assert(value.vint16 == -123);
+  }
   assert(id == 55030);
 
   assert(binn_map_next(&iter, &id, &value) == TRUE);
@@ -1765,7 +1771,9 @@ void test_binn2() {
 
   test_binn_read(obj1ptr);
 
-  test_binn_iter();
+  test_binn_iter(FALSE);
+
+  test_binn_iter(TRUE);
 
 }
 

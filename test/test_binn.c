@@ -585,7 +585,7 @@ void test1() {
 
 /*************************************************************************************/
 
-void test2() {
+void test2(BOOL use_int_compression) {
   binn *list=INVALID_BINN, *map=INVALID_BINN, *obj=INVALID_BINN;
   binn value;
   BOOL vbool;
@@ -603,7 +603,7 @@ void test2() {
   char *str_map = "test map";
   char *str_obj = "test object";
 
-  printf("testing binn 2... ");
+  printf("testing binn 2 (use_int_compression = %d)... ", use_int_compression);
 
   blobsize = 150;
   pblob = malloc(blobsize);
@@ -629,6 +629,12 @@ void test2() {
   assert(list != INVALID_BINN);
   assert(map != INVALID_BINN);
   assert(obj != INVALID_BINN);
+
+  if (use_int_compression == FALSE) {
+    list->disable_int_compression = TRUE;
+    map->disable_int_compression = TRUE;
+    obj->disable_int_compression = TRUE;
+  }
 
   // add values without creating before
 
@@ -719,13 +725,13 @@ void test2() {
   assert(value.header == BINN_MAGIC);
   assert(value.writable == FALSE);
   assert(value.allocated == FALSE);
-#ifndef BINN_DISABLE_COMPRESS_INT
-  assert(value.type == BINN_UINT8);
-  assert(value.ptr != &value.vuint8);  // it must return a pointer to the byte in the buffer
-#else
-  assert(value.type == BINN_INT32);
-  assert(value.ptr == &value.vint);
-#endif
+  if (use_int_compression) {
+    assert(value.type == BINN_UINT8);
+    assert(value.ptr != &value.vuint8);  // it must return a pointer to the byte in the buffer
+  } else {
+    assert(value.type == BINN_INT32);
+    assert(value.ptr == &value.vint);
+  }
   assert(value.size == 0);
   assert(value.count == 0);
   assert(value.vint == 123);
@@ -736,13 +742,13 @@ void test2() {
 
   assert(value.header == BINN_MAGIC);
   assert(value.writable == FALSE);
-#ifndef BINN_DISABLE_COMPRESS_INT
-  assert(value.type == BINN_UINT16);
-  assert(value.ptr == &value.vuint16);
-#else
-  assert(value.type == BINN_INT32);
-  assert(value.ptr == &value.vint);
-#endif
+  if (use_int_compression) {
+    assert(value.type == BINN_UINT16);
+    assert(value.ptr == &value.vuint16);
+  } else {
+    assert(value.type == BINN_INT32);
+    assert(value.ptr == &value.vint);
+  }
   assert(value.size == 0);
   assert(value.count == 0);
   assert(value.vint == 456);
@@ -753,13 +759,13 @@ void test2() {
 
   assert(value.header == BINN_MAGIC);
   assert(value.writable == FALSE);
-#ifndef BINN_DISABLE_COMPRESS_INT
-  assert(value.type == BINN_UINT16);
-  assert(value.ptr == &value.vuint16);
-#else
-  assert(value.type == BINN_INT32);
-  assert(value.ptr == &value.vint);
-#endif
+  if (use_int_compression) {
+    assert(value.type == BINN_UINT16);
+    assert(value.ptr == &value.vuint16);
+  } else {
+    assert(value.type == BINN_INT32);
+    assert(value.ptr == &value.vint);
+  }
   assert(value.size == 0);
   assert(value.count == 0);
   assert(value.vint == 789);
@@ -1715,7 +1721,8 @@ void main() {
 
   test1();
 
-  test2();
+  test2(FALSE);
+  test2(TRUE);
 
   test_binn2();
 

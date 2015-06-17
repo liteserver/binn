@@ -235,7 +235,8 @@ struct binn_struct {
     //
     BOOL           vbool;
   };
-
+  //
+  BOOL   disable_int_compression;
 };
 
 typedef struct binn_struct binn;
