@@ -16,16 +16,55 @@ extern void* (*malloc_fn)(int len);
 extern void* (*realloc_fn)(void *ptr, int len);
 extern void  (*free_fn)(void *ptr);
 
-uint64 htonll(uint64 input);
-
 /*************************************************************************************/
 
 void test_endianess() {
+  short vshort1, vshort2;
+  int   vint1, vint2;
   int64 value1, value2;
 
   printf("testing endianess... ");
 
-	value1 = 0x1122334455667788;
+  /* htons */
+  vshort1 = 0x1122;
+  vshort2 = htons(vshort1);
+  assert(vshort2 == 0x2211);
+  vshort2 = htons(vshort2);
+  assert(vshort2 == vshort1);
+
+  vshort1 = 0xF123;
+  vshort2 = htons(vshort1);
+  assert(vshort2 == 0x23F1);
+  vshort2 = htons(vshort2);
+  assert(vshort2 == vshort1);
+
+  vshort1 = 0x0123;
+  vshort2 = htons(vshort1);
+  assert(vshort2 == 0x2301);
+  vshort2 = htons(vshort2);
+  assert(vshort2 == vshort1);
+
+  /* htonl */
+  vint1 = 0x11223344;
+  vint2 = htonl(vint1);
+  assert(vint2 == 0x44332211);
+  vint2 = htonl(vint2);
+  assert(vint2 == vint1);
+
+  vint1 = 0xF1234580;
+  vint2 = htonl(vint1);
+  assert(vint2 == 0x804523F1);
+  vint2 = htonl(vint2);
+  assert(vint2 == vint1);
+
+  vint1 = 0x00112233;
+  vint2 = htonl(vint1);
+  assert(vint2 == 0x33221100);
+  vint2 = htonl(vint2);
+  assert(vint2 == vint1);
+
+  /* htonll */
+  value1 = 0x1122334455667788;
   value2 = htonll(value1);
   assert(value2 == 0x8877665544332211);
   value2 = htonll(value2);

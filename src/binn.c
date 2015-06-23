@@ -38,9 +38,41 @@ void  (*free_fn)(void *ptr) = 0;
 #endif
 #endif
 
+unsigned short htons(unsigned short input) {
+#if __BYTE_ORDER == __BIG_ENDIAN
+  return input;
+#else
+  unsigned short result;
+  unsigned char *source = (unsigned char *) &input;
+  unsigned char *dest = (unsigned char *) &result;
+
+  dest[0] = source[1];
+  dest[1] = source[0];
+
+  return result;
+#endif
+}
+
+unsigned int htonl(unsigned int input) {
+#if __BYTE_ORDER == __BIG_ENDIAN
+  return input;
+#else
+  unsigned int result;
+  unsigned char *source = (unsigned char *) &input;
+  unsigned char *dest = (unsigned char *) &result;
+
+  dest[0] = source[3];
+  dest[1] = source[2];
+  dest[2] = source[1];
+  dest[3] = source[0];
+
+  return result;
+#endif
+}
+
 uint64 htonll(uint64 input) {
 #if __BYTE_ORDER == __BIG_ENDIAN
-	return input;
+  return input;
 #else
   uint64 result;
   unsigned char *source = (unsigned char *) &input;
@@ -54,8 +86,6 @@ uint64 htonll(uint64 input) {
   return result;
 #endif
 }
-
-#define ntohll(x) htonll(x)
 
 /***************************************************************************/
 
