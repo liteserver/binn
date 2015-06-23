@@ -3,6 +3,15 @@
 #include <stdint.h>
 #include <memory.h>
 
+#ifdef _WIN32
+ // we will not use these functions from the winsock
+ #define htons _none_1
+ #define htonl _none_2
+ #include <windows.h>
+ #undef htons
+ #undef htonl
+#endif
+
 #include "binn.h"
 
 // magic number:  0x1F 0xb1 0x22 0x1F  =>  0x1FB1221F or 0x1F22B11F
@@ -86,6 +95,10 @@ uint64 htonll(uint64 input) {
   return result;
 #endif
 }
+
+#define ntohs htons
+#define ntohl htonl
+#define ntohll htonll
 
 /***************************************************************************/
 

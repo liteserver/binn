@@ -62,25 +62,6 @@
 #endif
 #endif
 
-#ifdef htons
-#undef htons
-#endif
-#ifdef ntohs
-#undef ntohs
-#endif
-#ifdef ntohl
-#undef ntohl
-#endif
-#ifdef htonl
-#undef htonl
-#endif
-unsigned short htons(unsigned short input);
-unsigned int htonl(unsigned int input);
-uint64 htonll(uint64 input);
-#define ntohs htons
-#define ntohl htonl
-#define ntohll htonll
-
 #ifdef _MSC_VER
   #define INLINE         __inline
   #define ALWAYS_INLINE  __forceinline

@@ -4,6 +4,7 @@
 #include <string.h>
 #include <math.h>  /* for fabs */
 #include <assert.h>
+#include "test_binn.h"
 #include "../src/binn.h"
 
 #define BINN_MAGIC            0x1F22B11F
@@ -15,6 +16,9 @@
 extern void* (*malloc_fn)(int len);
 extern void* (*realloc_fn)(void *ptr, int len);
 extern void  (*free_fn)(void *ptr);
+
+uint64 htonll(uint64 input);
+#define ntohll htonll
 
 /*************************************************************************************/
 

@@ -29,5 +29,8 @@
     <ClInclude Include="..\..\src\binn.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\test_binn.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
