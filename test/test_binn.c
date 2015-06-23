@@ -1713,6 +1713,8 @@ void main() {
 
   puts("\nStarting the unit/regression tests...\n");
 
+  printf("sizeof(binn) = %d\n\n", sizeof(binn));
+
   test_endianess();
 
   test_int64();

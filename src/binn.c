@@ -26,6 +26,16 @@ void  (*free_fn)(void *ptr) = 0;
 #define __LITTLE_ENDIAN 1234
 #define __BIG_ENDIAN	4321
 #define __BYTE_ORDER __LITTLE_ENDIAN
+#else
+#ifndef __BYTE_ORDER
+#error "__BYTE_ORDER not defined"
+#endif
+#ifndef __BIG_ENDIAN
+#error "__BIG_ENDIAN not defined"
+#endif
+#ifndef __LITTLE_ENDIAN
+#error "__LITTLE_ENDIAN not defined"
+#endif
 #endif
 
 uint64 htonll(uint64 input) {
@@ -922,7 +932,12 @@ void * APIENTRY binn_release(binn *item) {
     data = item->pbuf;
   }
 
-  free_fn(item);
+  if (item->allocated) {
+    free_fn(item);
+  } else {
+    memset(item, 0, sizeof(binn));
+    item->header = BINN_MAGIC;
+  }
 
   return data;
 
