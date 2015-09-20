@@ -66,27 +66,31 @@ Example Codes
 #### C
 Writing
 ```
-  binn *list;
+binn *obj;
 
-  // create a new list
-  list = binn_list();
+// create a new object
+obj = binn_object();
 
-  // add values to it
-  binn_list_add_int32(list, 123);
-  binn_list_add_double(list, 2.55);
-  binn_list_add_str(list, "testing");
+// add values to it
+binn_object_set_int32(obj, "id", 123);
+binn_object_set_str(obj, "name", "John");
+binn_object_set_double(obj, "total", 2.55);
 
-  // send over the network or save to a file...
-  send(sock, binn_ptr(list), binn_size(list));
+// send over the network or save to a file...
+send(sock, binn_ptr(obj), binn_size(obj));
 
-  // release the buffer
-  binn_free(list);
+// release the buffer
+binn_free(obj);
 ```
 Reading
 ```
-  int_value = binn_list_int32(ptr, 1);
-  dbl_value = binn_list_double(ptr, 2);
-  str_value = binn_list_str(ptr, 3);
+int id;
+char *name;
+double total;
+
+id = binn_object_int32(obj, "id");
+name = binn_object_str(obj, "name");
+total = binn_object_double(obj, "total");
 ```
 
 #### Javascript
