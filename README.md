@@ -117,17 +117,22 @@ var obj = from_binn(data);
 How to use
 ----------
 
-1. Including the binn.c file in your project
-2. Linking to the binn library
+ 1. Including the binn.c file in your project
+ 2. Linking to the binn library:
 
+##### On Linux:
 ```
 gcc -lbinn myapp.c
 ```
+##### On Windows:
+
+Include the binn-1.0.lib in your MSVC project
+
 
 Compiling the Library
 ---------------------
 
-On Linux:
+##### On Linux:
 
 ```
 git clone https://github.com/liteserver/binn
@@ -135,10 +140,29 @@ cd binn
 make
 make install
 ```
+It will create the file libbinn.so.1.0
+
+
+##### On Windows:
+
+Use the included Visual Studio project in the src/win32 folder
+
+It will create the file binn-1.0.dll
+
+
+Regression Tests
+----------------
+
+On Linux:
+
+```
+cd binn
+make test1
+```
 
 On Windows:
 
-Use the included Visual Studio projects
+Use the included Visual Studio project in the test/win32 folder
 
 
 Licence

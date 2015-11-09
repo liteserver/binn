@@ -94,6 +94,7 @@ char * i64toa(int64 value, char *buf, int radix) {
   default:
     buf[0] = 0;
   }
+  return buf;
 #endif
 }
 
@@ -104,7 +105,7 @@ int64 atoi64(char *str) {
   return _atoi64(str);
 #else
   int64 retval;
-  int i, is_negative=0;
+  int is_negative=0;
 
   if (*str == '-') {
     is_negative = 1;
@@ -312,9 +313,9 @@ void test_floating_point_numbers() {
 
 void test1() {
   static const int fix_size = 512;
-  int i, size, blobsize;
-  char *ptr, *p2, *pstr;
-  binn *obj1, *list, *map, *obj, *list2=INVALID_BINN, *map2=INVALID_BINN, *obj2=INVALID_BINN;
+  int i, blobsize;
+  char *ptr, *p2;
+  binn *obj1, *list, *map, *obj;  //, *list2=INVALID_BINN, *map2=INVALID_BINN, *obj2=INVALID_BINN;
   binn value;
   // test values
   char vbyte, *pblob;
@@ -634,12 +635,7 @@ void test2(BOOL use_int_compression) {
   BOOL vbool;
   int blobsize;
   char *pblob, *pstr;
-  signed short vint16, *pint16;
-  unsigned short vuint16, *puint16;
-  signed int vint32, *pint32;
-  unsigned int vuint32, *puint32;
-  signed long long int vint64, *pint64;
-  unsigned long long int vuint64, *puint64;
+  signed int vint32;
   double vdouble;
 
   char *str_list = "test list";
@@ -1752,7 +1748,7 @@ void test3() {
 
 /*************************************************************************************/
 
-void main() {
+int main() {
 
   puts("\nStarting the unit/regression tests...\n");
 
@@ -1774,5 +1770,6 @@ void main() {
   test3();
 
   puts("\nAll tests pass! :)\n");
+  return 0;
 
 }

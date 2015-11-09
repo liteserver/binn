@@ -17,3 +17,7 @@ install:
 
 clean:
 	rm -f *.o $(TARGET)
+
+test1: test/test_binn.c test/test_binn2.c src/binn.c
+	gcc -g -Wall -DDEBUG -o $@ $^
+	./test1

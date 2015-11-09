@@ -31,25 +31,32 @@
  typedef int BOOL;
  #endif
 
- #ifndef APIENTRY
+#endif
+
+#ifndef APIENTRY
  #ifdef _WIN32
   #define APIENTRY __stdcall
  #else
   //#define APIENTRY __attribute__((stdcall))
   #define APIENTRY 
  #endif
- #endif
-
 #endif
 
-#ifdef _WIN32
-#define INT64_FORMAT  "I64i"
-#define UINT64_FORMAT "I64u"
-#define INT64_HEX_FORMAT  "I64x"
+#ifndef BINN_PRIVATE
+ #ifdef DEBUG
+  #define BINN_PRIVATE
+ #else
+  #define BINN_PRIVATE  static
+ #endif
+#endif
+
+#ifdef _MSC_VER
+  #define INLINE         __inline
+  #define ALWAYS_INLINE  __forceinline
 #else
-#define INT64_FORMAT  "lli"
-#define UINT64_FORMAT "llu"
-#define INT64_HEX_FORMAT  "llx"
+  // you can change to 'extern inline' if using the gcc option -flto
+  #define INLINE         static inline
+  #define ALWAYS_INLINE  static inline __attribute__((always_inline))
 #endif
 
 #ifndef int64
@@ -62,13 +69,14 @@
 #endif
 #endif
 
-#ifdef _MSC_VER
-  #define INLINE         __inline
-  #define ALWAYS_INLINE  __forceinline
+#ifdef _WIN32
+#define INT64_FORMAT  "I64i"
+#define UINT64_FORMAT "I64u"
+#define INT64_HEX_FORMAT  "I64x"
 #else
-  // you can change to 'extern inline' if using the gcc option -flto
-  #define INLINE         static inline
-  #define ALWAYS_INLINE  static inline __attribute__((always_inline))
+#define INT64_FORMAT  "lli"
+#define UINT64_FORMAT "llu"
+#define INT64_HEX_FORMAT  "llx"
 #endif
 
 
