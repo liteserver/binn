@@ -3,16 +3,20 @@ Binn
 
 Binn is a binary data serialization format designed to be **compact**, **fast** and **easy to use**.
 
+
 Performance
----------------
+-----------
+
 The elements are stored with theirs sizes to increase the read performance.
 
 The library uses zero-copy when reading strings, blobs and containers.
 
 The strings are null terminated so when read the library returns a pointer to them inside the buffer, avoiding memory allocation and data copying.
 
+
 Data Types
-------------
+----------
+
 The Binn format supports all these:
 
 Primitive data types:
@@ -109,6 +113,33 @@ Reading
 ```
 var obj = from_binn(data);
 ```
+
+How to use
+----------
+
+1. Including the binn.c file in your project
+2. Linking to the binn library
+
+```
+gcc -lbinn myapp.c
+```
+
+Compiling the Library
+---------------------
+
+On Linux:
+
+```
+git clone https://github.com/liteserver/binn
+cd binn
+make
+make install
+```
+
+On Windows:
+
+Use the included Visual Studio projects
+
 
 Licence
 -------
