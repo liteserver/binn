@@ -481,12 +481,12 @@ BOOL   APIENTRY binn_iter_init(binn_iter *iter, void *pbuf, int type);
 // allocated
 binn * APIENTRY binn_list_next_value(binn_iter *iter);
 binn * APIENTRY binn_map_next_value(binn_iter *iter, int *pid);
-binn * APIENTRY binn_object_next_value(binn_iter *iter, char *pkey);  // must free the memory returned in the pkey
+binn * APIENTRY binn_object_next_value(binn_iter *iter, char *pkey);  // the key must be declared as: char key[256];
 
 // on stack
 BOOL   APIENTRY binn_list_next(binn_iter *iter, binn *value);
 BOOL   APIENTRY binn_map_next(binn_iter *iter, int *pid, binn *value);
-BOOL   APIENTRY binn_object_next(binn_iter *iter, char *pkey, binn *value);  // must free the memory returned in the pkey
+BOOL   APIENTRY binn_object_next(binn_iter *iter, char *pkey, binn *value);  // the key must be declared as: char key[256];
 
 // these 3 functions return a pointer to the value and the data type
 // they are thread-safe on big-endian devices
@@ -494,7 +494,7 @@ BOOL   APIENTRY binn_object_next(binn_iter *iter, char *pkey, binn *value);  // 
 // the returned pointer to 16, 32 and 64 bits values must be used only by single-threaded applications
 void * APIENTRY binn_list_read_next(binn_iter *iter, int *ptype, int *psize);
 void * APIENTRY binn_map_read_next(binn_iter *iter, int *pid, int *ptype, int *psize);
-void * APIENTRY binn_object_read_next(binn_iter *iter, char *pkey, int *ptype, int *psize);  // must free the memory returned in the pkey
+void * APIENTRY binn_object_read_next(binn_iter *iter, char *pkey, int *ptype, int *psize);  // the key must be declared as: char key[256];
 
 
 // --- MACROS ------------------------------------------------------------
