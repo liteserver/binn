@@ -22,7 +22,7 @@ The Binn format supports all these:
 Primitive data types:
 
 * null
-* boolean (<code>true</code> and <code>false</code>)
+* boolean (`true` and `false`)
 * integer (up to 64 bits signed or unsigned)
 * floating point numbers (IEEE single and double precision)
 * string
@@ -55,6 +55,7 @@ list, object, map:
 Example Structure
 ---------------------
 A json data such as {"hello":"world"} is serialized in binn as:
+
 <pre>
   \xE2           // type = object (container)
   \x11           // container total size
@@ -69,7 +70,7 @@ Example Codes
 
 #### C
 Writing
-```
+```c
 binn *obj;
 
 // create a new object
@@ -87,7 +88,7 @@ send(sock, binn_ptr(obj), binn_size(obj));
 binn_free(obj);
 ```
 Reading
-```
+```c
 int id;
 char *name;
 double total;
@@ -99,18 +100,18 @@ total = binn_object_double(obj, "total");
 
 #### Javascript
 Header
-```
+```javascript
 var binn = require('binn')()
   , to_binn   = binn.encode
   , from_binn = binn.decode
 ```
 Writing
-```
+```javascript
 var obj = {hello: 'world', number: 123};
 var data = to_binn(obj);
 ```
 Reading
-```
+```javascript
 var obj = from_binn(data);
 ```
 
@@ -126,7 +127,7 @@ gcc -lbinn myapp.c
 ```
 ##### On Windows:
 
-Include the binn-1.0.lib in your MSVC project
+Include the `binn-1.0.lib` in your MSVC project
 
 
 Compiling the Library
@@ -140,14 +141,14 @@ cd binn
 make
 make install
 ```
-It will create the file libbinn.so.1.0
+It will create the file `libbinn.so.1.0`
 
 
 ##### On Windows:
 
 Use the included Visual Studio project in the src/win32 folder
 
-It will create the file binn-1.0.dll
+It will create the file `binn-1.0.dll`
 
 
 Regression Tests
