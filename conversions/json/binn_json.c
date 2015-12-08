@@ -142,8 +142,11 @@ loc_integer:
   case BINN_MAP:
     value = json_object();
     binn_map_foreach(base, id, binn_value) {
-      //itoa(id, key, 10);
+#ifdef _MSC_VER
+      itoa(id, key, 10);
+#else
       snprintf(key, sizeof(key), "%d", id);
+#endif
       json_object_set_new(value, key, binn_to_json_obj2(&binn_value));
     }
     break;
@@ -170,10 +173,10 @@ json_t * binn_to_json_obj(void *base) {
   binn item;
 
   if (binn_is_struct(base))
-    return binn_to_json_obj((binn*)base);
+    return binn_to_json_obj2((binn*)base);
 
   binn_load(base, &item);
-  return binn_to_json_obj(&item);
+  return binn_to_json_obj2(&item);
 
 }
 
