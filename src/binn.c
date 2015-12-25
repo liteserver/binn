@@ -34,10 +34,22 @@ void  (*free_fn)(void *ptr) = 0;
 /***************************************************************************/
 
 #ifdef WIN32
-#define __LITTLE_ENDIAN 1234
-#define __BIG_ENDIAN	4321
-#define __BYTE_ORDER __LITTLE_ENDIAN
+#define __LITTLE_ENDIAN  1234
+#define __BIG_ENDIAN     4321
+#define __BYTE_ORDER   __LITTLE_ENDIAN
 #else
+#ifndef __BYTE_ORDER
+// on android we avoid the inclusion of htonx functions disabling the processing of _SYS_ENDIAN_H_
+#define _SYS_ENDIAN_H_
+#define _LITTLE_ENDIAN   1234
+#define _BIG_ENDIAN      4321
+#include <machine/endian.h>
+#define __LITTLE_ENDIAN _LITTLE_ENDIAN
+#define __BIG_ENDIAN    _BIG_ENDIAN
+#define __BYTE_ORDER    _BYTE_ORDER
+#endif
+#endif
+
 #ifndef __BYTE_ORDER
 #error "__BYTE_ORDER not defined"
 #endif
@@ -47,7 +59,14 @@ void  (*free_fn)(void *ptr) = 0;
 #ifndef __LITTLE_ENDIAN
 #error "__LITTLE_ENDIAN not defined"
 #endif
+#if __BIG_ENDIAN == __LITTLE_ENDIAN
+#error "__BIG_ENDIAN == __LITTLE_ENDIAN"
 #endif
+
+#undef htons
+#undef htonl
+#undef ntohs
+#undef ntohl
 
 BINN_PRIVATE unsigned short htons(unsigned short input) {
 #if __BYTE_ORDER == __BIG_ENDIAN
@@ -404,7 +423,8 @@ BINN_PRIVATE BOOL CheckAllocation(binn *item, int add_size) {
 
 /***************************************************************************/
 
-#if 0  // unused
+#if __BYTE_ORDER == __BIG_ENDIAN
+
 BINN_PRIVATE int get_storage_size(int storage_type) {
 
   switch (storage_type) {
@@ -423,6 +443,7 @@ BINN_PRIVATE int get_storage_size(int storage_type) {
   }
 
 }
+
 #endif
 
 /***************************************************************************/
@@ -647,6 +668,9 @@ BINN_PRIVATE void * compress_int(int *pstorage_type, int *ptype, void *psource) 
   int64  vint;
   uint64 vuint;
   char *pvalue;
+#if __BYTE_ORDER == __BIG_ENDIAN
+  int size1, size2;
+#endif
 
   storage_type = *pstorage_type;
   if (storage_type == BINN_STORAGE_BYTE) return psource;
