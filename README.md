@@ -115,6 +115,11 @@ Reading
 var obj = from_binn(data);
 ```
 
+#### More examples
+
+You can find more usage examples [here](usage.md)
+
+
 How to use
 ----------
 
