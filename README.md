@@ -128,7 +128,7 @@ How to use
 
 ##### On Linux:
 ```
-gcc -lbinn myapp.c
+gcc myapp.c -lbinn
 ```
 ##### On Windows:
 
@@ -163,7 +163,7 @@ On Linux:
 
 ```
 cd binn
-make test1
+make test
 ```
 
 On Windows:
