@@ -15,6 +15,8 @@ int MY_CURRENCY;
 
 char tmp[128];
 
+void * memdup(void *src, int size);
+
 char * i64toa(int64 val, char *buf, int radix);
 int64  atoi64(char *str);
 
@@ -766,9 +768,9 @@ void init_udts() {
 
 BOOL copy_int_value(void *psource, void *pdest, int source_type, int dest_type);
 
-void test_conversion() {
+void test_int_conversion() {
 
-  printf("testing data type conversion...");
+  printf("testing integer conversion...");
 
   // copy negative value to unsigned integer
 
@@ -1204,11 +1206,11 @@ void test_conversion() {
 
 /*************************************************************************************/
 
-void test_binn_conversion() {
+void test_binn_int_conversion() {
   binn *obj=INVALID_BINN;
   void *ptr;
 
-  printf("testing binn data read conversion... ");
+  printf("testing binn integer read conversion... ");
 
   obj = binn_object();
   assert(obj != NULL);
@@ -1270,6 +1272,458 @@ void test_binn_conversion() {
   binn_free(obj);
 
   puts("OK");
+
+}
+
+/*************************************************************************************/
+
+void test_value_conversion() {
+  binn *value;
+  char *ptr, blob[64] = "test blob";
+  void *pblob;
+  int size, vint32;
+  int64 vint64;
+  double vdouble;
+  BOOL vbool;
+
+  printf("testing binn value conversion... ");
+
+  /* test string values */
+
+  ptr = "static string";
+  value = binn_string(ptr, BINN_STATIC);
+  assert(value != NULL);
+  assert(value->type == BINN_STRING);
+  assert(value->ptr != NULL);
+  assert(value->ptr == ptr);
+  assert(value->freefn == NULL);
+  binn_free(value);
+
+  ptr = "transient string";
+  value = binn_string(ptr, BINN_TRANSIENT);
+  assert(value != NULL);
+  assert(value->type == BINN_STRING);
+  assert(value->ptr != NULL);
+  assert(value->ptr != ptr);
+  assert(strcmp((char*)value->ptr, ptr) == 0);
+  assert(value->freefn != NULL);
+  binn_free(value);
+
+  ptr = strdup("dynamic allocated string");
+  value = binn_string(ptr, free);
+  assert(value != NULL);
+  assert(value->type == BINN_STRING);
+  assert(value->ptr != NULL);
+  assert(value->ptr == ptr);
+  assert(value->freefn != NULL);
+  assert(value->freefn == &free);
+  binn_free(value);
+
+  /* test blob values */
+
+  size = 64;
+  pblob = blob;
+  value = binn_blob(pblob, size, BINN_STATIC);
+  assert(value != NULL);
+  assert(value->type == BINN_BLOB);
+  assert(value->ptr != NULL);
+  assert(value->ptr == pblob);
+  assert(value->freefn == NULL);
+  binn_free(value);
+
+  size = 64;
+  pblob = blob;
+  value = binn_blob(pblob, size, BINN_TRANSIENT);
+  assert(value != NULL);
+  assert(value->type == BINN_BLOB);
+  assert(value->ptr != NULL);
+  assert(value->ptr != pblob);
+  assert(memcmp(value->ptr, pblob, size) == 0);
+  assert(value->freefn != NULL);
+  binn_free(value);
+
+  size = 64;
+  pblob = memdup(blob, size);
+  value = binn_blob(pblob, size, free);
+  assert(value != NULL);
+  assert(value->type == BINN_BLOB);
+  assert(value->ptr != NULL);
+  assert(value->ptr == pblob);
+  assert(value->freefn == &free);
+  binn_free(value);
+
+
+  /* test conversions */
+
+  ptr = "123";
+  value = binn_string(ptr, BINN_STATIC);
+  assert(value != NULL);
+  assert(value->type == BINN_STRING);
+  assert(value->ptr != NULL);
+  assert(value->ptr == ptr);
+  assert(value->freefn == NULL);
+  //
+  assert(binn_get_str(value) == ptr);
+  assert(binn_get_int32(value, &vint32) == TRUE);
+  assert(vint32 == 123);
+  assert(binn_get_int64(value, &vint64) == TRUE);
+  assert(vint64 == 123);
+  assert(binn_get_double(value, &vdouble) == TRUE);
+  assert(AlmostEqualFloats(vdouble, 123, 4) == TRUE);
+  assert(binn_get_bool(value, &vbool) == TRUE);
+  assert(vbool == TRUE);
+  // check that the type is the same
+  assert(value->type == BINN_STRING);
+  assert(value->ptr != NULL);
+  assert(value->ptr == ptr);
+  assert(value->freefn == NULL);
+  //
+  binn_free(value);
+
+
+  ptr = "-456";
+  value = binn_string(ptr, BINN_STATIC);
+  assert(value != NULL);
+  assert(value->type == BINN_STRING);
+  assert(value->ptr != NULL);
+  assert(value->ptr == ptr);
+  assert(value->freefn == NULL);
+  //
+  assert(binn_get_str(value) == ptr);
+  assert(binn_get_int32(value, &vint32) == TRUE);
+  assert(vint32 == -456);
+  assert(binn_get_int64(value, &vint64) == TRUE);
+  assert(vint64 == -456);
+  assert(binn_get_double(value, &vdouble) == TRUE);
+  assert(AlmostEqualFloats(vdouble, -456, 4) == TRUE);
+  assert(binn_get_bool(value, &vbool) == TRUE);
+  assert(vbool == TRUE);
+  // check that the type is the same
+  assert(value->type == BINN_STRING);
+  assert(value->ptr != NULL);
+  assert(value->ptr == ptr);
+  assert(value->freefn == NULL);
+  //
+  binn_free(value);
+
+
+  ptr = "-4.56";
+  value = binn_string(ptr, BINN_STATIC);
+  assert(value != NULL);
+  assert(value->type == BINN_STRING);
+  assert(value->ptr != NULL);
+  assert(value->ptr == ptr);
+  assert(value->freefn == NULL);
+  //
+  assert(binn_get_str(value) == ptr);
+  assert(binn_get_int32(value, &vint32) == TRUE);
+  assert(vint32 == -4);
+  assert(binn_get_int64(value, &vint64) == TRUE);
+  assert(vint64 == -4);
+  assert(binn_get_double(value, &vdouble) == TRUE);
+  assert(AlmostEqualFloats(vdouble, -4.56, 4) == TRUE);
+  assert(binn_get_bool(value, &vbool) == TRUE);
+  assert(vbool == TRUE);
+  // check that the type is the same
+  assert(value->type == BINN_STRING);
+  assert(value->ptr != NULL);
+  assert(value->ptr == ptr);
+  assert(value->freefn == NULL);
+  //
+  binn_free(value);
+
+
+  // to boolean
+
+  ptr = "yes";
+  value = binn_string(ptr, BINN_STATIC);
+  assert(value != NULL);
+  assert(binn_get_str(value) == ptr);
+  assert(binn_get_bool(value, &vbool) == TRUE);
+  assert(vbool == TRUE);
+  binn_free(value);
+
+  ptr = "no";
+  value = binn_string(ptr, BINN_STATIC);
+  assert(value != NULL);
+  assert(binn_get_bool(value, &vbool) == TRUE);
+  assert(vbool == FALSE);
+  binn_free(value);
+
+  ptr = "on";
+  value = binn_string(ptr, BINN_STATIC);
+  assert(value != NULL);
+  assert(binn_get_bool(value, &vbool) == TRUE);
+  assert(vbool == TRUE);
+  binn_free(value);
+
+  ptr = "off";
+  value = binn_string(ptr, BINN_STATIC);
+  assert(value != NULL);
+  assert(binn_get_bool(value, &vbool) == TRUE);
+  assert(vbool == FALSE);
+  binn_free(value);
+
+  ptr = "true";
+  value = binn_string(ptr, BINN_STATIC);
+  assert(value != NULL);
+  assert(binn_get_bool(value, &vbool) == TRUE);
+  assert(vbool == TRUE);
+  binn_free(value);
+
+  ptr = "false";
+  value = binn_string(ptr, BINN_STATIC);
+  assert(value != NULL);
+  assert(binn_get_bool(value, &vbool) == TRUE);
+  assert(vbool == FALSE);
+  binn_free(value);
+
+  ptr = "1";
+  value = binn_string(ptr, BINN_STATIC);
+  assert(value != NULL);
+  assert(binn_get_bool(value, &vbool) == TRUE);
+  assert(vbool == TRUE);
+  binn_free(value);
+
+  ptr = "0";
+  value = binn_string(ptr, BINN_STATIC);
+  assert(value != NULL);
+  assert(binn_get_bool(value, &vbool) == TRUE);
+  assert(vbool == FALSE);
+  binn_free(value);
+
+
+  // from int32
+
+  value = binn_int32(-345);
+  assert(value != NULL);
+  assert(value->type == BINN_INT32);
+  assert(value->vint32 == -345);
+  assert(value->freefn == NULL);
+  //
+  assert(binn_get_int32(value, &vint32) == TRUE);
+  assert(vint32 == -345);
+  assert(binn_get_int64(value, &vint64) == TRUE);
+  assert(vint64 == -345);
+  assert(binn_get_double(value, &vdouble) == TRUE);
+  assert(AlmostEqualFloats(vdouble, -345, 4) == TRUE);
+  assert(binn_get_bool(value, &vbool) == TRUE);
+  assert(vbool == TRUE);
+  // check that the type is the same
+  assert(value->type == BINN_INT32);
+  assert(value->vint32 == -345);
+  assert(value->freefn == NULL);
+  // convert the value to string
+  ptr = binn_get_str(value);
+  assert(ptr != NULL);
+  assert(strcmp(ptr, "-345") == 0);
+  assert(value->type == BINN_STRING);
+  assert(value->ptr != NULL);
+  assert(value->ptr == ptr);
+  assert(value->freefn != NULL);
+  //
+  binn_free(value);
+
+
+  value = binn_int32(0);
+  assert(value != NULL);
+  assert(value->type == BINN_INT32);
+  assert(value->vint32 == 0);
+  assert(value->freefn == NULL);
+  //
+  assert(binn_get_int32(value, &vint32) == TRUE);
+  assert(vint32 == 0);
+  assert(binn_get_int64(value, &vint64) == TRUE);
+  assert(vint64 == 0);
+  assert(binn_get_double(value, &vdouble) == TRUE);
+  assert(AlmostEqualFloats(vdouble, 0, 4) == TRUE);
+  assert(binn_get_bool(value, &vbool) == TRUE);
+  assert(vbool == FALSE);
+  // check that the type is the same
+  assert(value->type == BINN_INT32);
+  assert(value->vint32 == 0);
+  assert(value->freefn == NULL);
+  // convert the value to string
+  ptr = binn_get_str(value);
+  assert(ptr != NULL);
+  assert(strcmp(ptr, "0") == 0);
+  assert(value->type == BINN_STRING);
+  assert(value->ptr != NULL);
+  assert(value->ptr == ptr);
+  assert(value->freefn != NULL);
+  //
+  binn_free(value);
+
+
+  // from int64
+
+  value = binn_int64(-345678);
+  assert(value != NULL);
+  assert(value->type == BINN_INT64);
+  assert(value->vint64 == -345678);
+  assert(value->freefn == NULL);
+  //
+  assert(binn_get_int32(value, &vint32) == TRUE);
+  assert(vint32 == -345678);
+  assert(binn_get_int64(value, &vint64) == TRUE);
+  assert(vint64 == -345678);
+  assert(binn_get_double(value, &vdouble) == TRUE);
+  assert(AlmostEqualFloats(vdouble, -345678, 4) == TRUE);
+  assert(binn_get_bool(value, &vbool) == TRUE);
+  assert(vbool == TRUE);
+  // check that the type is the same
+  assert(value->type == BINN_INT64);
+  assert(value->vint64 == -345678);
+  assert(value->freefn == NULL);
+  // convert the value to string
+  ptr = binn_get_str(value);
+  assert(ptr != NULL);
+  assert(strcmp(ptr, "-345678") == 0);
+  assert(value->type == BINN_STRING);
+  assert(value->ptr != NULL);
+  assert(value->ptr == ptr);
+  assert(value->freefn != NULL);
+  //
+  binn_free(value);
+
+
+  // from double
+
+  value = binn_double(-345.678);
+  assert(value != NULL);
+  assert(value->type == BINN_DOUBLE);
+  assert(value->vdouble == -345.678);
+  assert(value->freefn == NULL);
+  //
+  assert(binn_get_int32(value, &vint32) == TRUE);
+  assert(vint32 == -345);
+  assert(binn_get_int64(value, &vint64) == TRUE);
+  assert(vint64 == -345);
+  assert(binn_get_double(value, &vdouble) == TRUE);
+  assert(AlmostEqualFloats(vdouble, -345.678, 4) == TRUE);
+  assert(binn_get_bool(value, &vbool) == TRUE);
+  assert(vbool == TRUE);
+  // check that the type is the same
+  assert(value->type == BINN_DOUBLE);
+  assert(value->vdouble == -345.678);
+  assert(value->freefn == NULL);
+  // convert the value to string
+  ptr = binn_get_str(value);
+  assert(ptr != NULL);
+  assert(strcmp(ptr, "-345.678") == 0);
+  assert(value->type == BINN_STRING);
+  assert(value->ptr != NULL);
+  assert(value->ptr == ptr);
+  assert(value->freefn != NULL);
+  //
+  binn_free(value);
+
+
+  value = binn_double(0.0);
+  assert(value != NULL);
+  assert(value->type == BINN_DOUBLE);
+  assert(value->vdouble == 0.0);
+  assert(value->freefn == NULL);
+  //
+  assert(binn_get_int32(value, &vint32) == TRUE);
+  assert(vint32 == 0);
+  assert(binn_get_int64(value, &vint64) == TRUE);
+  assert(vint64 == 0);
+  assert(binn_get_double(value, &vdouble) == TRUE);
+  assert(AlmostEqualFloats(vdouble, 0, 4) == TRUE);
+  assert(binn_get_bool(value, &vbool) == TRUE);
+  assert(vbool == FALSE);
+  // check that the type is the same
+  assert(value->type == BINN_DOUBLE);
+  assert(value->vdouble == 0.0);
+  assert(value->freefn == NULL);
+  // convert the value to string
+  ptr = binn_get_str(value);
+  assert(ptr != NULL);
+  assert(strcmp(ptr, "0") == 0);
+  assert(value->type == BINN_STRING);
+  assert(value->ptr != NULL);
+  assert(value->ptr == ptr);
+  assert(value->freefn != NULL);
+  //
+  binn_free(value);
+
+
+  // from bool
+
+  value = binn_bool(FALSE);
+  assert(value != NULL);
+  assert(value->type == BINN_BOOL);
+  assert(value->vbool == FALSE);
+  assert(value->freefn == NULL);
+  //
+  assert(binn_get_int32(value, &vint32) == TRUE);
+  assert(vint32 == 0);
+  assert(binn_get_int64(value, &vint64) == TRUE);
+  assert(vint64 == 0);
+  assert(binn_get_double(value, &vdouble) == TRUE);
+  assert(AlmostEqualFloats(vdouble, 0, 4) == TRUE);
+  assert(binn_get_bool(value, &vbool) == TRUE);
+  assert(vbool == FALSE);
+  // check that the type is the same
+  assert(value->type == BINN_BOOL);
+  assert(value->vbool == FALSE);
+  assert(value->freefn == NULL);
+  // convert the value to string
+  ptr = binn_get_str(value);
+  assert(ptr != NULL);
+  assert(strcmp(ptr, "false") == 0);
+  assert(value->type == BINN_STRING);
+  assert(value->ptr != NULL);
+  assert(value->ptr == ptr);
+  assert(value->freefn != NULL);
+  //
+  binn_free(value);
+
+
+  value = binn_bool(TRUE);
+  assert(value != NULL);
+  assert(value->type == BINN_BOOL);
+  assert(value->vbool == TRUE);
+  assert(value->freefn == NULL);
+  //
+  assert(binn_get_int32(value, &vint32) == TRUE);
+  assert(vint32 == 1);
+  assert(binn_get_int64(value, &vint64) == TRUE);
+  assert(vint64 == 1);
+  assert(binn_get_double(value, &vdouble) == TRUE);
+  assert(AlmostEqualFloats(vdouble, 1, 4) == TRUE);
+  assert(binn_get_bool(value, &vbool) == TRUE);
+  assert(vbool == TRUE);
+  // check that the type is the same
+  assert(value->type == BINN_BOOL);
+  assert(value->vbool == TRUE);
+  assert(value->freefn == NULL);
+  // convert the value to string
+  ptr = binn_get_str(value);
+  assert(ptr != NULL);
+  assert(strcmp(ptr, "true") == 0);
+  assert(value->type == BINN_STRING);
+  assert(value->ptr != NULL);
+  assert(value->ptr == ptr);
+  assert(value->freefn != NULL);
+  //
+  binn_free(value);
+
+
+  puts("OK");
+
+}
+
+/*************************************************************************************/
+
+void test_value_copy() {
+
+  printf("testing binn value copy... ");
+
+  //TODO
+
+  puts("TODO!!!");
 
 }
 
@@ -1755,8 +2209,10 @@ void test_binn2() {
 
   test_virtual_types();
 
-  test_conversion();
-  test_binn_conversion();
+  test_int_conversion();
+  test_binn_int_conversion();
+  test_value_conversion();
+  test_value_copy();
 
   init_udts();
 

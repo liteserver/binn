@@ -157,6 +157,19 @@ BINN_PRIVATE void * binn_malloc(int size) {
 
 /***************************************************************************/
 
+BINN_PRIVATE void * binn_memdup(void *src, int size) {
+  void *dest;
+
+  if (src == NULL || size <= 0) return NULL;
+  dest = binn_malloc(size);
+  if (dest == NULL) return NULL;
+  memcpy(dest, src, size);
+  return dest;
+
+}
+
+/***************************************************************************/
+
 BINN_PRIVATE size_t strlen2(char *str) {
 
   if (str == NULL) return 0;
@@ -679,55 +692,55 @@ BINN_PRIVATE void * compress_int(int *pstorage_type, int *ptype, void *psource) 
 
   switch (type) {
   case BINN_INT64:
-  	vint = *(int64*)psource;
-  	goto loc_signed;
+    vint = *(int64*)psource;
+    goto loc_signed;
   case BINN_INT32:
-  	vint = *(int*)psource;
-  	goto loc_signed;
+    vint = *(int*)psource;
+    goto loc_signed;
   case BINN_INT16:
-  	vint = *(short*)psource;
-  	goto loc_signed;
+    vint = *(short*)psource;
+    goto loc_signed;
   case BINN_UINT64:
-  	vuint = *(uint64*)psource;
-  	goto loc_positive;
+    vuint = *(uint64*)psource;
+    goto loc_positive;
   case BINN_UINT32:
-  	vuint = *(unsigned int*)psource;
-  	goto loc_positive;
+    vuint = *(unsigned int*)psource;
+    goto loc_positive;
   case BINN_UINT16:
-  	vuint = *(unsigned short*)psource;
-  	goto loc_positive;
+    vuint = *(unsigned short*)psource;
+    goto loc_positive;
   }
 
 loc_signed:
 
   if (vint >= 0) {
-  	vuint = vint;
-  	goto loc_positive;
+    vuint = vint;
+    goto loc_positive;
   }
 
 //loc_negative:
 
   if (vint >= INT8_MIN) {
-   	type2 = BINN_INT8;
+    type2 = BINN_INT8;
   } else
   if (vint >= INT16_MIN) {
-   	type2 = BINN_INT16;
+    type2 = BINN_INT16;
   } else
   if (vint >= INT32_MIN) {
-   	type2 = BINN_INT32;
+    type2 = BINN_INT32;
   }
   goto loc_exit;
 
 loc_positive:
 
   if (vuint <= UINT8_MAX) {
-   	type2 = BINN_UINT8;
+    type2 = BINN_UINT8;
   } else
   if (vuint <= UINT16_MAX) {
-   	type2 = BINN_UINT16;
+    type2 = BINN_UINT16;
   } else
   if (vuint <= UINT32_MAX) {
-   	type2 = BINN_UINT32;
+    type2 = BINN_UINT32;
   }
 
 loc_exit:
@@ -983,6 +996,8 @@ void APIENTRY binn_free(binn *item) {
   if ((item->writable) && (item->pre_allocated == FALSE)) {
     free_fn(item->pbuf);
   }
+
+  if (item->freefn) item->freefn(item->ptr);
 
   if (item->allocated) {
     free_fn(item);
@@ -2475,6 +2490,10 @@ BOOL APIENTRY binn_object_get(void *ptr, char *key, int type, void *pvalue, int 
 // these functions below may not be implemented as inline functions, because
 // they use a lot of space, even for the variable. so they will be exported.
 
+// but what about using as static?
+//    is there any problem with wrappers? can these wrappers implement these functions using the header?
+//    if as static, will they be present even on modules that don't use the functions?
+
 signed char APIENTRY binn_list_int8(void *list, int pos) {
   signed char value;
 
@@ -2898,7 +2917,7 @@ BINN_PRIVATE binn * binn_alloc_item() {
 
 /*************************************************************************************/
 
-binn * APIENTRY binn_value(int type, void *pvalue, int size) {
+binn * APIENTRY binn_value(int type, void *pvalue, int size, binn_mem_free freefn) {
   int storage_type;
   binn *item = binn_alloc_item();
   if (item) {
@@ -2907,10 +2926,22 @@ binn * APIENTRY binn_value(int type, void *pvalue, int size) {
     switch (storage_type) {
     case BINN_STORAGE_NOBYTES:
       break;
-    case BINN_STORAGE_BLOB:
     case BINN_STORAGE_STRING:
+      if (size == 0) size = strlen((char*)pvalue) + 1;
+    case BINN_STORAGE_BLOB:
     case BINN_STORAGE_CONTAINER:
-      item->ptr = pvalue;
+      if (freefn == BINN_TRANSIENT) {
+        item->ptr = binn_memdup(pvalue, size);
+        if (item->ptr == NULL) {
+          free_fn(item);
+          return NULL;
+        }
+        item->freefn = free_fn;
+        if (storage_type == BINN_STORAGE_STRING) size--;
+      } else {
+        item->ptr = pvalue;
+        item->freefn = freefn;
+      }
       item->size = size;
       break;
     default:
@@ -2919,6 +2950,342 @@ binn * APIENTRY binn_value(int type, void *pvalue, int size) {
     }
   }
   return item;
+}
+
+/*************************************************************************************/
+
+BOOL APIENTRY binn_set_string(binn *item, char *str, binn_mem_free pfree) {
+
+  if (item == NULL || str == NULL) return FALSE;
+
+  if (pfree == BINN_TRANSIENT) {
+    item->ptr = strdup(str);
+    if (item->ptr == NULL) return FALSE;
+    item->freefn = free;
+  } else {
+    item->ptr = str;
+    item->freefn = pfree;
+  }
+
+  item->type = BINN_STRING;
+  return TRUE;
+
+}
+
+/*************************************************************************************/
+
+BOOL APIENTRY binn_set_blob(binn *item, void *ptr, int size, binn_mem_free pfree) {
+
+  if (item == NULL || ptr == NULL) return FALSE;
+
+  if (pfree == BINN_TRANSIENT) {
+    item->ptr = binn_memdup(ptr, size);
+    if (item->ptr == NULL) return FALSE;
+    item->freefn = free_fn;
+  } else {
+    item->ptr = ptr;
+    item->freefn = pfree;
+  }
+
+  item->type = BINN_BLOB;
+  item->size = size;
+  return TRUE;
+
+}
+
+/*************************************************************************************/
+/*** READ CONVERTED VALUE ************************************************************/
+/*************************************************************************************/
+
+#ifdef _MSC_VER
+#define atoi64 _atoi64
+#else
+int64 atoi64(char *str) {
+  int64 retval;
+  int is_negative=0;
+
+  if (*str == '-') {
+    is_negative = 1;
+    str++;
+  }
+  retval = 0;
+  for (; *str; str++) {
+    retval = 10 * retval + (*str - '0');
+  }
+  if (is_negative) retval *= -1;
+  return retval;
+}
+#endif
+
+/*****************************************************************************/
+
+BINN_PRIVATE BOOL is_integer(char *p) {
+  BOOL retval;
+
+  if (p == NULL) return FALSE;
+  if (*p == '-') p++;
+  if (*p == 0) return FALSE;
+
+  retval = TRUE;
+
+  for (; *p; p++) {
+    if ( (*p < '0') || (*p > '9') ) {
+      retval = FALSE;
+    }
+  }
+
+  return retval;
+}
+
+/*****************************************************************************/
+
+BINN_PRIVATE BOOL is_float(char *p) {
+  BOOL retval, number_found=FALSE;
+
+  if (p == NULL) return FALSE;
+  if (*p == '-') p++;
+  if (*p == 0) return FALSE;
+
+  retval = TRUE;
+
+  for (; *p; p++) {
+    if ((*p == '.') || (*p == ',')) {
+      if (!number_found) retval = FALSE;
+    } else if ( (*p >= '0') && (*p <= '9') ) {
+      number_found = TRUE;
+    } else {
+      return FALSE;
+    }
+  }
+
+  return retval;
+}
+
+/*************************************************************************************/
+
+BINN_PRIVATE BOOL is_bool_str(char *str, BOOL *pbool) {
+  int64  vint;
+  double vdouble;
+
+  if (str == NULL || pbool == NULL) return FALSE;
+
+  if (strcmpi(str, "true") == 0) goto loc_true;
+  if (strcmpi(str, "yes") == 0) goto loc_true;
+  if (strcmpi(str, "on") == 0) goto loc_true;
+  //if (strcmpi(str, "1") == 0) goto loc_true;
+
+  if (strcmpi(str, "false") == 0) goto loc_false;
+  if (strcmpi(str, "no") == 0) goto loc_false;
+  if (strcmpi(str, "off") == 0) goto loc_false;
+  //if (strcmpi(str, "0") == 0) goto loc_false;
+
+  if (is_integer(str)) {
+    vint = atoi64(str);
+    *pbool = (vint != 0) ? TRUE : FALSE;
+    return TRUE;
+  } else if (is_float(str)) {
+    vdouble = atof(str);
+    *pbool = (vdouble != 0) ? TRUE : FALSE;
+    return TRUE;
+  }
+
+  return FALSE;
+
+loc_true:
+  *pbool = TRUE;
+  return TRUE;
+
+loc_false:
+  *pbool = FALSE;
+  return TRUE;
+
+}
+
+/*************************************************************************************/
+
+BOOL APIENTRY binn_get_int32(binn *value, int *pint) {
+
+  if (value == NULL || pint == NULL) return FALSE;
+
+  if (type_family(value->type) == BINN_FAMILY_INT) {
+    return copy_int_value(value->ptr, pint, value->type, BINN_INT32);
+  }
+
+  switch (value->type) {
+  case BINN_FLOAT:
+    if ((value->vfloat < INT32_MIN) || (value->vfloat > INT32_MAX)) return FALSE;
+    *pint = value->vfloat;
+    break;
+  case BINN_DOUBLE:
+    if ((value->vdouble < INT32_MIN) || (value->vdouble > INT32_MAX)) return FALSE;
+    *pint = value->vdouble;
+    break;
+  case BINN_STRING:
+    if (is_integer((char*)value->ptr))
+      *pint = atoi((char*)value->ptr);
+    else if (is_float((char*)value->ptr))
+      *pint = atof((char*)value->ptr);
+    else
+      return FALSE;
+    break;
+  case BINN_BOOL:
+    *pint = value->vbool;
+    break;
+  default:
+    return FALSE;
+  }
+
+  return TRUE;
+}
+
+/*************************************************************************************/
+
+BOOL APIENTRY binn_get_int64(binn *value, int64 *pint) {
+
+  if (value == NULL || pint == NULL) return FALSE;
+
+  if (type_family(value->type) == BINN_FAMILY_INT) {
+    return copy_int_value(value->ptr, pint, value->type, BINN_INT64);
+  }
+
+  switch (value->type) {
+  case BINN_FLOAT:
+    if ((value->vfloat < INT64_MIN) || (value->vfloat > INT64_MAX)) return FALSE;
+    *pint = value->vfloat;
+    break;
+  case BINN_DOUBLE:
+    if ((value->vdouble < INT64_MIN) || (value->vdouble > INT64_MAX)) return FALSE;
+    *pint = value->vdouble;
+    break;
+  case BINN_STRING:
+    if (is_integer((char*)value->ptr))
+      *pint = atoi64((char*)value->ptr);
+    else if (is_float((char*)value->ptr))
+      *pint = atof((char*)value->ptr);
+    else
+      return FALSE;
+    break;
+  case BINN_BOOL:
+    *pint = value->vbool;
+    break;
+  default:
+    return FALSE;
+  }
+
+  return TRUE;
+}
+
+/*************************************************************************************/
+
+BOOL APIENTRY binn_get_double(binn *value, double *pfloat) {
+  int64 vint;
+
+  if (value == NULL || pfloat == NULL) return FALSE;
+
+  if (type_family(value->type) == BINN_FAMILY_INT) {
+    if (copy_int_value(value->ptr, &vint, value->type, BINN_INT64) == FALSE) return FALSE;
+    *pfloat = vint;
+    return TRUE;
+  }
+
+  switch (value->type) {
+  case BINN_FLOAT:
+    *pfloat = value->vfloat;
+    break;
+  case BINN_DOUBLE:
+    *pfloat = value->vdouble;
+    break;
+  case BINN_STRING:
+    if (is_integer((char*)value->ptr))
+      *pfloat = atoi64((char*)value->ptr);
+    else if (is_float((char*)value->ptr))
+      *pfloat = atof((char*)value->ptr);
+    else
+      return FALSE;
+    break;
+  case BINN_BOOL:
+    *pfloat = value->vbool;
+    break;
+  default:
+    return FALSE;
+  }
+
+  return TRUE;
+}
+
+/*************************************************************************************/
+
+BOOL APIENTRY binn_get_bool(binn *value, BOOL *pbool) {
+  int64 vint;
+
+  if (value == NULL || pbool == NULL) return FALSE;
+
+  if (type_family(value->type) == BINN_FAMILY_INT) {
+    if (copy_int_value(value->ptr, &vint, value->type, BINN_INT64) == FALSE) return FALSE;
+    *pbool = (vint != 0) ? TRUE : FALSE;
+    return TRUE;
+  }
+
+  switch (value->type) {
+  case BINN_BOOL:
+    *pbool = value->vbool;
+    break;
+  case BINN_FLOAT:
+    *pbool = (value->vfloat != 0) ? TRUE : FALSE;
+    break;
+  case BINN_DOUBLE:
+    *pbool = (value->vdouble != 0) ? TRUE : FALSE;
+    break;
+  case BINN_STRING:
+    return is_bool_str((char*)value->ptr, pbool);
+  default:
+    return FALSE;
+  }
+
+  return TRUE;
+}
+
+/*************************************************************************************/
+
+char * APIENTRY binn_get_str(binn *value) {
+  int64 vint;
+  char buf[128];
+
+  if (value == NULL) return NULL;
+
+  if (type_family(value->type) == BINN_FAMILY_INT) {
+    if (copy_int_value(value->ptr, &vint, value->type, BINN_INT64) == FALSE) return NULL;
+    sprintf(buf, "%lld", vint);
+    goto loc_convert_value;
+  }
+
+  switch (value->type) {
+  case BINN_FLOAT:
+    value->vdouble = value->vfloat;
+  case BINN_DOUBLE:
+    sprintf(buf, "%g", value->vdouble);
+    goto loc_convert_value;
+  case BINN_STRING:
+    return (char*) value->ptr;
+  case BINN_BOOL:
+    if (value->vbool)
+      strcpy(buf, "true");
+    else
+      strcpy(buf, "false");
+    goto loc_convert_value;
+  }
+
+  return NULL;
+
+loc_convert_value:
+
+  //value->vint64 = 0;
+  value->ptr = strdup(buf);
+  if (value->ptr == NULL) return NULL;
+  value->freefn = free;
+  value->type = BINN_STRING;
+  return (char*) value->ptr;
+
 }
 
 /*************************************************************************************/

@@ -36,6 +36,14 @@ EXPORTS binn_object_set_new
 EXPORTS binn_add_value
 
 EXPORTS binn_value
+EXPORTS binn_set_string
+EXPORTS binn_set_blob
+
+EXPORTS binn_get_int32
+EXPORTS binn_get_int64
+EXPORTS binn_get_double
+EXPORTS binn_get_bool
+EXPORTS binn_get_str
 
 EXPORTS binn_load
 EXPORTS binn_open

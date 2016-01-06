@@ -17,7 +17,7 @@ binn * json_obj_to_binn(json_t *base) {
   case JSON_OBJECT:
     obj = binn_object();
     json_object_foreach(base, key, value) {
-      if (binn_object_set_new(obj, key, json_obj_to_binn(value)) == FALSE) { binn_free(obj); return NULL; }
+      if (binn_object_set_new(obj, (char*)key, json_obj_to_binn(value)) == FALSE) { binn_free(obj); return NULL; }
     }
     return obj;
 
@@ -31,7 +31,7 @@ binn * json_obj_to_binn(json_t *base) {
     return list;
 
   case JSON_STRING:
-    return binn_string(json_string_value(base));
+    return binn_string((char*)json_string_value(base), BINN_TRANSIENT);
 
   case JSON_INTEGER:
     return binn_int64(json_integer_value(base));

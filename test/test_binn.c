@@ -80,6 +80,19 @@ void test_endianess() {
 
 /***************************************************************************/
 
+void * memdup(void *src, int size) {
+  void *dest;
+
+  if (src == NULL || size <= 0) return NULL;
+  dest = malloc(size);
+  if (dest == NULL) return NULL;
+  memcpy(dest, src, size);
+  return dest;
+
+}
+
+/***************************************************************************/
+
 char * i64toa(int64 value, char *buf, int radix) {
 #ifdef _MSC_VER
   return _i64toa(value, buf, radix);

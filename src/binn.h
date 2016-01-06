@@ -201,6 +201,10 @@
 //++
 
 
+typedef void (*binn_mem_free)(void*);
+#define BINN_STATIC      ((binn_mem_free)0)
+#define BINN_TRANSIENT   ((binn_mem_free)-1)
+
 
 // --- BINN STRUCTURE --------------------------------------------------------------
 
@@ -220,6 +224,8 @@ struct binn_struct {
   void  *ptr;
   int    size;
   int    count;
+  //
+  binn_mem_free freefn;  // used only when type == BINN_STRING or BINN_BLOB
   //
   union {
     signed char    vint8;
@@ -300,49 +306,49 @@ void * APIENTRY binn_release(binn *item); // free the binn structure but keeps t
 
 // --- CREATING VALUES ---------------------------------------------------
 
-binn * APIENTRY binn_value(int type, void *pvalue, int size);
+binn * APIENTRY binn_value(int type, void *pvalue, int size, binn_mem_free freefn);
 
 ALWAYS_INLINE binn * binn_int8(signed char value) {
-  return binn_value(BINN_INT8, &value, 0);
+  return binn_value(BINN_INT8, &value, 0, NULL);
 }
 ALWAYS_INLINE binn * binn_int16(short value) {
-  return binn_value(BINN_INT16, &value, 0);
+  return binn_value(BINN_INT16, &value, 0, NULL);
 }
 ALWAYS_INLINE binn * binn_int32(int value) {
-  return binn_value(BINN_INT32, &value, 0);
+  return binn_value(BINN_INT32, &value, 0, NULL);
 }
 ALWAYS_INLINE binn * binn_int64(int64 value) {
-  return binn_value(BINN_INT64, &value, 0);
+  return binn_value(BINN_INT64, &value, 0, NULL);
 }
 ALWAYS_INLINE binn * binn_uint8(unsigned char value) {
-  return binn_value(BINN_UINT8, &value, 0);
+  return binn_value(BINN_UINT8, &value, 0, NULL);
 }
 ALWAYS_INLINE binn * binn_uint16(unsigned short value) {
-  return binn_value(BINN_UINT16, &value, 0);
+  return binn_value(BINN_UINT16, &value, 0, NULL);
 }
 ALWAYS_INLINE binn * binn_uint32(unsigned int value) {
-  return binn_value(BINN_UINT32, &value, 0);
+  return binn_value(BINN_UINT32, &value, 0, NULL);
 }
 ALWAYS_INLINE binn * binn_uint64(uint64 value) {
-  return binn_value(BINN_UINT64, &value, 0);
+  return binn_value(BINN_UINT64, &value, 0, NULL);
 }
 ALWAYS_INLINE binn * binn_float(float value) {
-  return binn_value(BINN_FLOAT, &value, 0);
+  return binn_value(BINN_FLOAT, &value, 0, NULL);
 }
 ALWAYS_INLINE binn * binn_double(double value) {
-  return binn_value(BINN_DOUBLE, &value, 0);
+  return binn_value(BINN_DOUBLE, &value, 0, NULL);
 }
 ALWAYS_INLINE binn * binn_bool(BOOL value) {
-  return binn_value(BINN_BOOL, &value, 0);
+  return binn_value(BINN_BOOL, &value, 0, NULL);
 }
 ALWAYS_INLINE binn * binn_null() {
-  return binn_value(BINN_NULL, NULL, 0);
+  return binn_value(BINN_NULL, NULL, 0, NULL);
 }
-ALWAYS_INLINE binn * binn_string(char *str) {
-  return binn_value(BINN_STRING, str, 0);
+ALWAYS_INLINE binn * binn_string(char *str, binn_mem_free freefn) {
+  return binn_value(BINN_STRING, str, 0, freefn);
 }
-ALWAYS_INLINE binn * binn_blob(void *ptr, int size) {
-  return binn_value(BINN_BLOB, ptr, size);
+ALWAYS_INLINE binn * binn_blob(void *ptr, int size, binn_mem_free freefn) {
+  return binn_value(BINN_BLOB, ptr, size, freefn);
 }
 
 
@@ -500,29 +506,31 @@ void * APIENTRY binn_object_read_next(binn_iter *iter, char *pkey, int *ptype, i
 // --- MACROS ------------------------------------------------------------
 
 
-#define binn_is_writable(item) item->writable;
+#define binn_is_writable(item) (item)->writable;
 
 
 // set values on stack allocated binn structures
 
-#define binn_set_null(item)       item->type = BINN_NULL;
+#define binn_set_null(item)       (item)->type = BINN_NULL;
 
-#define binn_set_bool(item,value) { item->type = BINN_BOOL; item->vbool = value; item->ptr = &item->vbool; }
+#define binn_set_bool(item,value) { (item)->type = BINN_BOOL; (item)->vbool = value; (item)->ptr = &((item)->vbool); }
 
-#define binn_set_int(item,value)   { item->type = BINN_INT32; item->vint32 = value; item->ptr = &item->vint32; }
-#define binn_set_int64(item,value) { item->type = BINN_INT64; item->vint64 = value; item->ptr = &item->vint64; }
+#define binn_set_int(item,value)   { (item)->type = BINN_INT32; (item)->vint32 = value; (item)->ptr = &((item)->vint32); }
+#define binn_set_int64(item,value) { (item)->type = BINN_INT64; (item)->vint64 = value; (item)->ptr = &((item)->vint64); }
 
-#define binn_set_uint(item,value)   { item->type = BINN_UINT32; item->vuint32 = value; item->ptr = &item->vuint32; }
-#define binn_set_uint64(item,value) { item->type = BINN_UINT64; item->vuint64 = value; item->ptr = &item->vuint64; }
+#define binn_set_uint(item,value)   { (item)->type = BINN_UINT32; (item)->vuint32 = value; (item)->ptr = &((item)->vuint32); }
+#define binn_set_uint64(item,value) { (item)->type = BINN_UINT64; (item)->vuint64 = value; (item)->ptr = &((item)->vuint64); }
 
-#define binn_set_float(item,value)  { item->type = BINN_FLOAT; item->vfloat = value; item->ptr = &item->vfloat; }
-#define binn_set_double(item,value) { item->type = BINN_DOUBLE; item->vdouble = value; item->ptr = &item->vdouble; }
+#define binn_set_float(item,value)  { (item)->type = BINN_FLOAT;  (item)->vfloat  = value; (item)->ptr = &((item)->vfloat); }
+#define binn_set_double(item,value) { (item)->type = BINN_DOUBLE; (item)->vdouble = value; (item)->ptr = &((item)->vdouble); }
 
-#define binn_set_str(item,str)       { item->type = BINN_STRING; item->ptr = str; }
-#define binn_set_blob(item,ptr,size) { item->type = BINN_BLOB; item->ptr = ptr; item->size = size; }
+//#define binn_set_string(item,str,pfree)    { (item)->type = BINN_STRING; (item)->ptr = str; (item)->freefn = pfree; }
+//#define binn_set_blob(item,ptr,size,pfree) { (item)->type = BINN_BLOB;   (item)->ptr = ptr; (item)->freefn = pfree; (item)->size = size; }
+BOOL APIENTRY binn_set_string(binn *item, char *str, binn_mem_free pfree);
+BOOL APIENTRY binn_set_blob(binn *item, void *ptr, int size, binn_mem_free pfree);
 
 
-//#define binn_double(value) {       item->type = BINN_DOUBLE; item->vdouble = value; item->ptr = &item->vdouble }
+//#define binn_double(value) {       (item)->type = BINN_DOUBLE; (item)->vdouble = value; (item)->ptr = &((item)->vdouble) }
 
 
 
@@ -826,7 +834,9 @@ ALWAYS_INLINE BOOL binn_map_get_object(void *map, int id, void **pvalue) {
 
 /***************************************************************************/
 
-//   if (binn_object_int32(obj, "multiplier", &multiplier) == FALSE) xxx;
+// usage:
+//   if (binn_object_get_int32(obj, "multiplier", &multiplier) == FALSE) xxx;
+
 ALWAYS_INLINE BOOL binn_object_get_int8(void *obj, char *key, signed char *pvalue) {
   return binn_object_get(obj, key, BINN_INT8, pvalue, NULL);
 }
@@ -878,5 +888,18 @@ ALWAYS_INLINE BOOL binn_object_get_object(void *obj, char *key, void **pvalue) {
 
 /***************************************************************************/
 
+BOOL   APIENTRY binn_get_int32(binn *value, int *pint);
+BOOL   APIENTRY binn_get_int64(binn *value, int64 *pint);
+BOOL   APIENTRY binn_get_double(binn *value, double *pfloat);
+BOOL   APIENTRY binn_get_bool(binn *value, BOOL *pbool);
+char * APIENTRY binn_get_str(binn *value);
+
+// boolean string values:
+// 1, true, yes, on
+// 0, false, no, off
+
+// boolean number values:
+// !=0 [true]
+// ==0 [false]
 
 #endif //BINN_H
