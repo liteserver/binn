@@ -3,6 +3,8 @@ LINK1  = libbinn.so.1
 LINK2  = libbinn.so
 SHORT  = binn
 
+.PHONY: test
+
 $(TARGET): binn.o
 	gcc -shared -Wl,-soname,$(LINK1) -o $@ $^
 	strip $(TARGET)
@@ -18,6 +20,6 @@ install:
 clean:
 	rm -f *.o $(TARGET)
 
-test1: test/test_binn.c test/test_binn2.c src/binn.c
-	gcc -g -Wall -DDEBUG -o $@ $^
-	./test1
+test: test/test_binn.c test/test_binn2.c src/binn.c
+	gcc -g -Wall -DDEBUG -o test/test_binn $^
+	cd test && ./test_binn
