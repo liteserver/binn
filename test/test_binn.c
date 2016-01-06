@@ -111,28 +111,6 @@ char * i64toa(int64 value, char *buf, int radix) {
 #endif
 }
 
-/***************************************************************************/
-
-int64 atoi64(char *str) {
-#ifdef _MSC_VER
-  return _atoi64(str);
-#else
-  int64 retval;
-  int is_negative=0;
-
-  if (*str == '-') {
-    is_negative = 1;
-    str++;
-  }
-  retval = 0;
-  for (; *str; str++) {
-    retval = 10 * retval + (*str - '0');
-  }
-  if (is_negative) retval *= -1;
-  return retval;
-#endif
-}
-
 /*************************************************************************************/
 
 void pass_int64(int64 a) {

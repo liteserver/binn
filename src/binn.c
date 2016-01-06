@@ -124,8 +124,8 @@ BINN_PRIVATE uint64 htonll(uint64 input) {
 /***************************************************************************/
 
 #ifndef WIN32
-#define stricmp strcasecmp
-#define strnicmp strncasecmp
+#define strcmpi strcasecmp
+#define strncmpi strncasecmp
 #endif
 
 /***************************************************************************/
@@ -563,7 +563,7 @@ BINN_PRIVATE unsigned char * SearchForKey(unsigned char *p, int header_size, int
     if (p > plimit) break;
     // Compare if the strings are equal.
     if (len > 0) {
-      if (strnicmp((char*)p, key, len) == 0) {   // note that there is no null terminator here
+      if (strncmpi((char*)p, key, len) == 0) {   // note that there is no null terminator here
         if (keylen == len) {
           p += len;
           return p;
