@@ -18,7 +18,11 @@ char tmp[128];
 void * memdup(void *src, int size);
 
 char * i64toa(int64 val, char *buf, int radix);
+#ifdef _MSC_VER
+#define atoi64 _atoi64
+#else
 int64  atoi64(char *str);
+#endif
 
 BOOL AlmostEqualFloats(float A, float B, int maxUlps);
 

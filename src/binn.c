@@ -124,8 +124,8 @@ BINN_PRIVATE uint64 htonll(uint64 input) {
 /***************************************************************************/
 
 #ifndef WIN32
-#define strcmpi strcasecmp
-#define strncmpi strncasecmp
+#define stricmp strcasecmp
+#define strnicmp strncasecmp
 #endif
 
 /***************************************************************************/
@@ -563,7 +563,7 @@ BINN_PRIVATE unsigned char * SearchForKey(unsigned char *p, int header_size, int
     if (p > plimit) break;
     // Compare if the strings are equal.
     if (len > 0) {
-      if (strncmpi((char*)p, key, len) == 0) {   // note that there is no null terminator here
+      if (strnicmp((char*)p, key, len) == 0) {   // note that there is no null terminator here
         if (keylen == len) {
           p += len;
           return p;
@@ -2959,9 +2959,9 @@ BOOL APIENTRY binn_set_string(binn *item, char *str, binn_mem_free pfree) {
   if (item == NULL || str == NULL) return FALSE;
 
   if (pfree == BINN_TRANSIENT) {
-    item->ptr = strdup(str);
+    item->ptr = binn_memdup(str, strlen(str) + 1);
     if (item->ptr == NULL) return FALSE;
-    item->freefn = free;
+    item->freefn = free_fn;
   } else {
     item->ptr = str;
     item->freefn = pfree;
@@ -3069,15 +3069,15 @@ BINN_PRIVATE BOOL is_bool_str(char *str, BOOL *pbool) {
 
   if (str == NULL || pbool == NULL) return FALSE;
 
-  if (strcmpi(str, "true") == 0) goto loc_true;
-  if (strcmpi(str, "yes") == 0) goto loc_true;
-  if (strcmpi(str, "on") == 0) goto loc_true;
-  //if (strcmpi(str, "1") == 0) goto loc_true;
+  if (stricmp(str, "true") == 0) goto loc_true;
+  if (stricmp(str, "yes") == 0) goto loc_true;
+  if (stricmp(str, "on") == 0) goto loc_true;
+  //if (stricmp(str, "1") == 0) goto loc_true;
 
-  if (strcmpi(str, "false") == 0) goto loc_false;
-  if (strcmpi(str, "no") == 0) goto loc_false;
-  if (strcmpi(str, "off") == 0) goto loc_false;
-  //if (strcmpi(str, "0") == 0) goto loc_false;
+  if (stricmp(str, "false") == 0) goto loc_false;
+  if (stricmp(str, "no") == 0) goto loc_false;
+  if (stricmp(str, "off") == 0) goto loc_false;
+  //if (stricmp(str, "0") == 0) goto loc_false;
 
   if (is_integer(str)) {
     vint = atoi64(str);
