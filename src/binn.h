@@ -7,30 +7,24 @@
 #ifndef BINN_H
 #define BINN_H
 
-#ifdef _WIN32
- #include <windows.h>
+#ifndef NULL
+#ifdef __cplusplus
+#define NULL    0
 #else
+#define NULL    ((void *)0)
+#endif
+#endif
 
- #ifndef NULL
- #ifdef __cplusplus
-  #define NULL    0
- #else
-  #define NULL    ((void *)0)
- #endif
- #endif
+#ifndef TRUE
+#define TRUE  1
+#endif
 
- #ifndef TRUE
- #define TRUE  1
- #endif
+#ifndef FALSE
+#define FALSE 0
+#endif
 
- #ifndef FALSE
- #define FALSE 0
- #endif
-
- #ifndef BOOL
- typedef int BOOL;
- #endif
-
+#ifndef BOOL
+typedef int BOOL;
 #endif
 
 #ifndef APIENTRY

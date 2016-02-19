@@ -1,17 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
+#include <string.h>
 #include <memory.h>
-
-#ifdef _WIN32
- // we will not use these functions from the winsock
- #define htons _none_1
- #define htonl _none_2
- #include <windows.h>
- #undef htons
- #undef htonl
-#endif
-
 #include "binn.h"
 
 #define UNUSED(x) (void)(x)
