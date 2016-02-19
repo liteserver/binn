@@ -7,6 +7,11 @@
 #ifndef BINN_H
 #define BINN_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+
 #ifndef NULL
 #ifdef __cplusplus
 #define NULL    0
@@ -895,5 +900,10 @@ char * APIENTRY binn_get_str(binn *value);
 // boolean number values:
 // !=0 [true]
 // ==0 [false]
+
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif //BINN_H
