@@ -510,21 +510,21 @@ void * APIENTRY binn_object_read_next(binn_iter *iter, char *pkey, int *ptype, i
 
 // set values on stack allocated binn structures
 
-#define binn_set_null(item)       (item)->type = BINN_NULL;
+#define binn_set_null(item)         do { (item)->type = BINN_NULL; } while (0)
 
-#define binn_set_bool(item,value) { (item)->type = BINN_BOOL; (item)->vbool = value; (item)->ptr = &((item)->vbool); }
+#define binn_set_bool(item,value)   do { (item)->type = BINN_BOOL; (item)->vbool = value; (item)->ptr = &((item)->vbool); } while (0)
 
-#define binn_set_int(item,value)   { (item)->type = BINN_INT32; (item)->vint32 = value; (item)->ptr = &((item)->vint32); }
-#define binn_set_int64(item,value) { (item)->type = BINN_INT64; (item)->vint64 = value; (item)->ptr = &((item)->vint64); }
+#define binn_set_int(item,value)    do { (item)->type = BINN_INT32; (item)->vint32 = value; (item)->ptr = &((item)->vint32); } while (0)
+#define binn_set_int64(item,value)  do { (item)->type = BINN_INT64; (item)->vint64 = value; (item)->ptr = &((item)->vint64); } while (0)
 
-#define binn_set_uint(item,value)   { (item)->type = BINN_UINT32; (item)->vuint32 = value; (item)->ptr = &((item)->vuint32); }
-#define binn_set_uint64(item,value) { (item)->type = BINN_UINT64; (item)->vuint64 = value; (item)->ptr = &((item)->vuint64); }
+#define binn_set_uint(item,value)   do { (item)->type = BINN_UINT32; (item)->vuint32 = value; (item)->ptr = &((item)->vuint32); } while (0)
+#define binn_set_uint64(item,value) do { (item)->type = BINN_UINT64; (item)->vuint64 = value; (item)->ptr = &((item)->vuint64); } while (0)
 
-#define binn_set_float(item,value)  { (item)->type = BINN_FLOAT;  (item)->vfloat  = value; (item)->ptr = &((item)->vfloat); }
-#define binn_set_double(item,value) { (item)->type = BINN_DOUBLE; (item)->vdouble = value; (item)->ptr = &((item)->vdouble); }
+#define binn_set_float(item,value)  do { (item)->type = BINN_FLOAT;  (item)->vfloat  = value; (item)->ptr = &((item)->vfloat); } while (0)
+#define binn_set_double(item,value) do { (item)->type = BINN_DOUBLE; (item)->vdouble = value; (item)->ptr = &((item)->vdouble); } while (0)
 
-//#define binn_set_string(item,str,pfree)    { (item)->type = BINN_STRING; (item)->ptr = str; (item)->freefn = pfree; }
-//#define binn_set_blob(item,ptr,size,pfree) { (item)->type = BINN_BLOB;   (item)->ptr = ptr; (item)->freefn = pfree; (item)->size = size; }
+//#define binn_set_string(item,str,pfree)    do { (item)->type = BINN_STRING; (item)->ptr = str; (item)->freefn = pfree; } while (0)
+//#define binn_set_blob(item,ptr,size,pfree) do { (item)->type = BINN_BLOB;   (item)->ptr = ptr; (item)->freefn = pfree; (item)->size = size; } while (0)
 BOOL APIENTRY binn_set_string(binn *item, char *str, binn_mem_free pfree);
 BOOL APIENTRY binn_set_blob(binn *item, void *ptr, int size, binn_mem_free pfree);
 
