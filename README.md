@@ -174,3 +174,9 @@ Use the included Visual Studio project in the test/win32 folder
 Licence
 -------
 Apache 2.0
+
+
+Contact
+-------
+
+Questions, suggestions, support... you can reach me here: contact AT litereplica DOT io
