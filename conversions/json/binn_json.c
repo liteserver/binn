@@ -210,6 +210,8 @@ char * binn_to_json(void *base) {
 
 /*************************************************************************************/
 
+#ifdef JSON_JAVASCRIPT
+
 char * binn_to_javascript(void *base) {
   json_t *json; char *ptr;
 
@@ -219,5 +221,7 @@ char * binn_to_javascript(void *base) {
 
   return ptr;
 }
+
+#endif
 
 /*************************************************************************************/
