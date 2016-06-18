@@ -1,5 +1,6 @@
 Binn
 ====
+[![Build Status](https://travis-ci.org/liteserver/binn.svg?branch=master)](https://travis-ci.org/liteserver/binn)
 
 Binn is a binary data serialization format designed to be **compact**, **fast** and **easy to use**.
 
@@ -7,7 +8,7 @@ Binn is a binary data serialization format designed to be **compact**, **fast** 
 Performance
 -----------
 
-The elements are stored with theirs sizes to increase the read performance.
+The elements are stored with their sizes to increase the read performance.
 
 The library uses zero-copy when reading strings, blobs and containers.
 
@@ -123,7 +124,7 @@ You can find more usage examples [here](usage.md)
 How to use
 ----------
 
- 1. Including the binn.c file in your project
+ 1. Including the binn.c file in your project; or
  2. Linking to the binn library:
 
 ##### On Linux:
@@ -144,7 +145,7 @@ Compiling the Library
 git clone https://github.com/liteserver/binn
 cd binn
 make
-make install
+sudo make install
 ```
 It will create the file `libbinn.so.1.0`
 
