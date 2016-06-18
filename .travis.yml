@@ -2,5 +2,5 @@ language: c
 
 script:
   - make
-  - make install
+  - sudo make install
   - make test
