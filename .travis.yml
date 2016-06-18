@@ -1,0 +1,6 @@
+language: c
+
+script:
+  - make
+  - make install
+  - make test
