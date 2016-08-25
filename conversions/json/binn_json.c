@@ -3,11 +3,15 @@
 #include <string.h>
 #include <memory.h>
 
+#ifdef WIN32
+#include <windows.h>
+#endif
+
 #include "binn_json.h"
 
 /*************************************************************************************/
 
-binn * json_obj_to_binn(json_t *base) {
+binn * APIENTRY json_obj_to_binn(json_t *base) {
   size_t  i, count;
   json_t  *value;
   const char  *key;
@@ -56,7 +60,7 @@ binn * json_obj_to_binn(json_t *base) {
 
 /*************************************************************************************/
 
-json_t * binn_to_json_obj2(binn *base) {
+BINN_PRIVATE json_t * binn_to_json_obj2(binn *base) {
   json_t    *value;
   json_int_t intvalue;
   binn_iter  iter;
@@ -158,6 +162,10 @@ loc_integer:
     }
     break;
 
+  case BINN_NULL:
+    value = json_null();
+    break;
+
   default:
     value = NULL;
     break;
@@ -169,7 +177,7 @@ loc_integer:
 
 /*************************************************************************************/
 
-json_t * binn_to_json_obj(void *base) {
+json_t * APIENTRY binn_to_json_obj(void *base) {
   binn item;
 
   if (binn_is_struct(base))
@@ -182,7 +190,7 @@ json_t * binn_to_json_obj(void *base) {
 
 /*************************************************************************************/
 
-binn * json_to_binn(char *json_str) {
+binn * APIENTRY json_to_binn(char *json_str) {
   json_t *base;
   //json_error_t error;
   binn *item;
@@ -198,7 +206,7 @@ binn * json_to_binn(char *json_str) {
 
 /*************************************************************************************/
 
-char * binn_to_json(void *base) {
+char * APIENTRY binn_to_json(void *base) {
   json_t *json; char *ptr;
 
   json = binn_to_json_obj(base);
@@ -212,7 +220,7 @@ char * binn_to_json(void *base) {
 
 #ifdef JSON_JAVASCRIPT
 
-char * binn_to_javascript(void *base) {
+char * APIENTRY binn_to_javascript(void *base) {
   json_t *json; char *ptr;
 
   json = binn_to_json_obj(base);
