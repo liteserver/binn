@@ -1,3 +1,8 @@
+/*
+This file shows the basics of using binn objects. It does not show lists and maps.
+For more examples check https://github.com/liteserver/binn/blob/master/usage.md
+*/
+
 #include <binn.h>
 
 void create_and_pass_buffer() {
