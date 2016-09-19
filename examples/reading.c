@@ -14,9 +14,9 @@ void read_example_1(void *buf) {
   char *name;
   double price;
 
-  int id = binn_object_int32(buf, "id");
-  char *name = binn_object_str(buf, "name");
-  double price = binn_object_double(buf, "price");
+  id = binn_object_int32(buf, "id");
+  name = binn_object_str(buf, "name");
+  price = binn_object_double(buf, "price");
 
 }
 
@@ -28,7 +28,6 @@ void read_example_2(void *buf) {
   int id;
   char *name;
   double price;
-
   binn *obj;
 
   obj = binn_open(buf);
@@ -65,10 +64,9 @@ void read_example_3b() {
   int id;
   char *name;
   double price;
-
   binn *obj;
 
-  obj = some_function();  /* this imaginary function returns a binn pointer */
+  obj = some_function();  /* this function should return a binn pointer */
 
   id = binn_object_int32(obj, "id");
   name = binn_object_str(obj, "name");
