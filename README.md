@@ -66,11 +66,15 @@ A json data such as {"hello":"world"} is serialized in binn as:
   \x05world\x00  // value (null terminated)
 </pre>
 
-Example Codes
-------------------
+You can check the [complete specification](specs.md)
 
-#### C
+Usage Example
+-------------
+
+### C
+
 Writing
+
 ```c
 binn *obj;
 
@@ -88,7 +92,9 @@ send(sock, binn_ptr(obj), binn_size(obj));
 // release the buffer
 binn_free(obj);
 ```
+
 Reading
+
 ```c
 int id;
 char *name;
@@ -99,24 +105,30 @@ name = binn_object_str(obj, "name");
 total = binn_object_double(obj, "total");
 ```
 
-#### Javascript
+### Javascript
+
 Header
+
 ```javascript
 var binn = require('binn')()
   , to_binn   = binn.encode
   , from_binn = binn.decode
 ```
+
 Writing
+
 ```javascript
 var obj = {hello: 'world', number: 123};
 var data = to_binn(obj);
 ```
+
 Reading
+
 ```javascript
 var obj = from_binn(data);
 ```
 
-#### More examples
+### More examples
 
 You can find more usage examples [here](usage.md)
 
@@ -127,11 +139,12 @@ How to use
  1. Including the binn.c file in your project; or
  2. Linking to the binn library:
 
-##### On Linux:
+#### On Linux:
 ```
 gcc myapp.c -lbinn
 ```
-##### On Windows:
+
+#### On Windows:
 
 Include the `binn-1.0.lib` in your MSVC project
 
@@ -139,7 +152,7 @@ Include the `binn-1.0.lib` in your MSVC project
 Compiling the Library
 ---------------------
 
-##### On Linux:
+#### On Linux:
 
 ```
 git clone https://github.com/liteserver/binn
@@ -150,7 +163,7 @@ sudo make install
 It will create the file `libbinn.so.1.0`
 
 
-##### On Windows:
+#### On Windows:
 
 Use the included Visual Studio project in the src/win32 folder
 
@@ -172,6 +185,14 @@ On Windows:
 Use the included Visual Studio project in the test/win32 folder
 
 
+Reliability
+-----------
+
+The current version (1.0) is stable and production ready
+
+As it is cross-platform, data can be transferred between little-endian and big-endian devices
+
+
 Licence
 -------
 Apache 2.0
@@ -180,4 +201,4 @@ Apache 2.0
 Contact
 -------
 
-Questions, suggestions, support... you can reach me here: contact AT litereplica DOT io
+Questions, suggestions, support: contact AT litereplica DOT io
