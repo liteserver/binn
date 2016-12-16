@@ -110,27 +110,25 @@ total = binn_object_double(obj, "total");
 Header
 
 ```javascript
-var binn = require('binn')()
-  , to_binn   = binn.encode
-  , from_binn = binn.decode
+var binn = require('node-binn');
 ```
 
 Writing
 
 ```javascript
 var obj = {hello: 'world', number: 123};
-var data = to_binn(obj);
+var data = binn.encode(obj);
 ```
 
 Reading
 
 ```javascript
-var obj = from_binn(data);
+var obj = binn.decode(data);
 ```
 
 ### More examples
 
-You can find more usage examples [here](usage.md)
+You can find more usage examples [here](usage.md) and in the [examples folder](examples)
 
 
 How to use
