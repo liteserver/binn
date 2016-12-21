@@ -110,7 +110,7 @@ total = binn_object_double(obj, "total");
 Header
 
 ```javascript
-var binn = require('node-binn');
+var binn = require('binn.js');
 ```
 
 Writing
@@ -129,6 +129,11 @@ var obj = binn.decode(data);
 ### More examples
 
 You can find more usage examples [here](usage.md) and in the [examples folder](examples)
+
+
+### Wrappers
+
+Feel free to make a wrapper for your preferred language. Then inform us so we can list it here.
 
 
 How to use
