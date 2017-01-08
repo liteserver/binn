@@ -1,6 +1,8 @@
 Binn
 ====
 [![Build Status](https://travis-ci.org/liteserver/binn.svg?branch=master)](https://travis-ci.org/liteserver/binn)
+[![Tests](https://img.shields.io/badge/tests-1815-brightgreen.svg)]()
+[![Stable](https://img.shields.io/badge/status-stable-brightgreen.svg)]()
 
 Binn is a binary data serialization format designed to be **compact**, **fast** and **easy to use**.
 
