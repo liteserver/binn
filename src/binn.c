@@ -6,6 +6,7 @@
 #include "binn.h"
 
 #define UNUSED(x) (void)(x)
+#define round(dbl) dbl >= 0.0 ? (int)(dbl + 0.5) : ((dbl - (double)(int)dbl) <= -0.5 ? (int)dbl : (int)(dbl - 0.5))
 
 // magic number:  0x1F 0xb1 0x22 0x1F  =>  0x1FB1221F or 0x1F22B11F
 // because the BINN_STORAGE_NOBYTES (binary 000) may not have so many sub-types (BINN_STORAGE_HAS_MORE = 0x10)
@@ -3091,17 +3092,17 @@ BOOL APIENTRY binn_get_int32(binn *value, int *pint) {
   switch (value->type) {
   case BINN_FLOAT:
     if ((value->vfloat < INT32_MIN) || (value->vfloat > INT32_MAX)) return FALSE;
-    *pint = value->vfloat;
+    *pint = round(value->vfloat);
     break;
   case BINN_DOUBLE:
     if ((value->vdouble < INT32_MIN) || (value->vdouble > INT32_MAX)) return FALSE;
-    *pint = value->vdouble;
+    *pint = round(value->vdouble);
     break;
   case BINN_STRING:
     if (is_integer((char*)value->ptr))
       *pint = atoi((char*)value->ptr);
     else if (is_float((char*)value->ptr))
-      *pint = atof((char*)value->ptr);
+      *pint = round(atof((char*)value->ptr));
     else
       return FALSE;
     break;
@@ -3128,17 +3129,17 @@ BOOL APIENTRY binn_get_int64(binn *value, int64 *pint) {
   switch (value->type) {
   case BINN_FLOAT:
     if ((value->vfloat < INT64_MIN) || (value->vfloat > INT64_MAX)) return FALSE;
-    *pint = value->vfloat;
+    *pint = round(value->vfloat);
     break;
   case BINN_DOUBLE:
     if ((value->vdouble < INT64_MIN) || (value->vdouble > INT64_MAX)) return FALSE;
-    *pint = value->vdouble;
+    *pint = round(value->vdouble);
     break;
   case BINN_STRING:
     if (is_integer((char*)value->ptr))
       *pint = atoi64((char*)value->ptr);
     else if (is_float((char*)value->ptr))
-      *pint = atof((char*)value->ptr);
+      *pint = round(atof((char*)value->ptr));
     else
       return FALSE;
     break;
