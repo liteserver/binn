@@ -24,21 +24,12 @@ void  (*free_fn)(void *ptr) = 0;
 
 /***************************************************************************/
 
-#ifdef WIN32
-#define __LITTLE_ENDIAN  1234
-#define __BIG_ENDIAN     4321
-#define __BYTE_ORDER   __LITTLE_ENDIAN
+#if defined(__APPLE__) || defined(_WIN32)
+#define __BIG_ENDIAN      0x1000
+#define __LITTLE_ENDIAN   0x0001
+#define __BYTE_ORDER    __LITTLE_ENDIAN
 #else
-#ifndef __BYTE_ORDER
-// on android we avoid the inclusion of htonx functions disabling the processing of _SYS_ENDIAN_H_
-#define _SYS_ENDIAN_H_
-#define _LITTLE_ENDIAN   1234
-#define _BIG_ENDIAN      4321
-#include <machine/endian.h>
-#define __LITTLE_ENDIAN _LITTLE_ENDIAN
-#define __BIG_ENDIAN    _BIG_ENDIAN
-#define __BYTE_ORDER    _BYTE_ORDER
-#endif
+#include <endian.h>
 #endif
 
 #ifndef __BYTE_ORDER
@@ -54,12 +45,7 @@ void  (*free_fn)(void *ptr) = 0;
 #error "__BIG_ENDIAN == __LITTLE_ENDIAN"
 #endif
 
-#undef htons
-#undef htonl
-#undef ntohs
-#undef ntohl
-
-BINN_PRIVATE unsigned short htons(unsigned short input) {
+BINN_PRIVATE unsigned short tobe16(unsigned short input) {
 #if __BYTE_ORDER == __BIG_ENDIAN
   return input;
 #else
@@ -74,7 +60,7 @@ BINN_PRIVATE unsigned short htons(unsigned short input) {
 #endif
 }
 
-BINN_PRIVATE unsigned int htonl(unsigned int input) {
+BINN_PRIVATE unsigned int tobe32(unsigned int input) {
 #if __BYTE_ORDER == __BIG_ENDIAN
   return input;
 #else
@@ -91,7 +77,7 @@ BINN_PRIVATE unsigned int htonl(unsigned int input) {
 #endif
 }
 
-BINN_PRIVATE uint64 htonll(uint64 input) {
+BINN_PRIVATE uint64 tobe64(uint64 input) {
 #if __BYTE_ORDER == __BIG_ENDIAN
   return input;
 #else
@@ -108,9 +94,9 @@ BINN_PRIVATE uint64 htonll(uint64 input) {
 #endif
 }
 
-#define ntohs htons
-#define ntohl htonl
-#define ntohll htonll
+#define frombe16 tobe16
+#define frombe32 tobe32
+#define frombe64 tobe64
 
 /***************************************************************************/
 
@@ -478,14 +464,14 @@ BINN_PRIVATE unsigned char * AdvanceDataPos(unsigned char *p) {
     break;
   case BINN_STORAGE_BLOB:
     DataSize = *((int *)p);
-    DataSize = ntohl(DataSize);
+    DataSize = frombe32(DataSize);
     p += 4 + DataSize;
     break;
   case BINN_STORAGE_CONTAINER:
     DataSize = *((unsigned char*)p);
     if (DataSize & 0x80) {
       DataSize = *((int*)p);
-      DataSize = ntohl(DataSize);
+      DataSize = frombe32(DataSize);
       DataSize &= 0x7FFFFFFF;
     }
     DataSize--;  // remove the type byte already added before
@@ -495,7 +481,7 @@ BINN_PRIVATE unsigned char * AdvanceDataPos(unsigned char *p) {
     DataSize = *((unsigned char*)p);
     if (DataSize & 0x80) {
       DataSize = *((int*)p); p+=4;
-      DataSize = ntohl(DataSize);
+      DataSize = frombe32(DataSize);
       DataSize &= 0x7FFFFFFF;
     } else {
       p++;
@@ -523,7 +509,7 @@ BINN_PRIVATE unsigned char * SearchForID(unsigned char *p, int header_size, int 
   // search for the ID in all the arguments.
   for (i = 0; i < numitems; i++) {
     int32 = *((int*)p); p += 4;
-    int32 = ntohl(int32);
+    int32 = frombe32(int32);
     if (p > plimit) break;
     // Compare if the IDs are equal.
     if (int32 == id) return p;
@@ -649,7 +635,7 @@ BINN_PRIVATE BOOL binn_map_set_raw(binn *item, int id, int type, void *pvalue, i
 
   if (CheckAllocation(item, 4) == FALSE) return FALSE;  // 4 bytes used for the id.
 
-  int32 = htonl(id);
+  int32 = tobe32(id);
   p = ((unsigned char *) item->pbuf) + item->used_size;
   *((int *)p) = int32;
   item->used_size += 4;
@@ -829,7 +815,7 @@ BINN_PRIVATE BOOL AddValue(binn *item, int type, void *pvalue, int size) {
   if (storage_type != BINN_STORAGE_CONTAINER) {
     ptr = (unsigned char *) &type;
     if (type > 255) {
-      type = htons(type);  // correct the endianess, if needed
+      type = tobe16(type);  // correct the endianess, if needed
       *p = *ptr; p++;
       item->used_size++;
       ptr++;
@@ -848,28 +834,28 @@ BINN_PRIVATE BOOL AddValue(binn *item, int type, void *pvalue, int size) {
       item->used_size += 1;
       break;
     case BINN_STORAGE_WORD:
-      //int16 = htons( (short) Value);
+      //int16 = tobe16( (short) Value);
       int16 = *((short *) pvalue);
-      int16 = htons(int16);
+      int16 = tobe16(int16);
       *((short *) p) = int16;
       item->used_size += 2;
       break;
     case BINN_STORAGE_DWORD:
-      //int32 = htonl( (int) Value);
+      //int32 = tobe32( (int) Value);
       int32 = *((int *) pvalue);
-      int32 = htonl(int32);
+      int32 = tobe32(int32);
       *((int *) p) = int32;
       item->used_size += 4;
       break;
     case BINN_STORAGE_QWORD:
       // is there an htond or htonq to be used with qwords? (64 bits)
       int64 = *((uint64 *) pvalue);
-      int64 = htonll(int64);
+      int64 = tobe64(int64);
       *((uint64 *) p) = int64;
       item->used_size += 8;
       break;
     case BINN_STORAGE_BLOB:
-      int32 = htonl(size);
+      int32 = tobe32(size);
       *((int *) p) = int32;
       p += 4;
       memcpy(p, pvalue, size);
@@ -878,7 +864,7 @@ BINN_PRIVATE BOOL AddValue(binn *item, int type, void *pvalue, int size) {
     case BINN_STORAGE_STRING:
       if (size > 127) {
         int32 = size | 0x80000000;
-        int32 = htonl(int32);
+        int32 = tobe32(int32);
         *((int *) p) = int32;
         p += 4;
         item->used_size += 4;
@@ -922,7 +908,7 @@ BINN_PRIVATE BOOL binn_save_header(binn *item) {
     p -= 4;
     size += 3;
     int32 = item->count | 0x80000000;
-    int32 = htonl(int32);
+    int32 = tobe32(int32);
     *((int *)p) = int32;
   } else {
     p--;
@@ -934,7 +920,7 @@ BINN_PRIVATE BOOL binn_save_header(binn *item) {
     p -= 4;
     size += 3;
     int32 = size | 0x80000000;
-    int32 = htonl(int32);
+    int32 = tobe32(int32);
     *((int *)p) = int32;
   } else {
     p--;
@@ -960,11 +946,11 @@ BINN_PRIVATE BOOL binn_save_header(binn *item) {
   *p = byte; p++;
   // write the size
   int32 = item->used_size | 0x80000000;
-  int32 = htonl(int32);
+  int32 = tobe32(int32);
   *((int *)p) = int32; p+=4;
   // write the count
   int32 = item->count | 0x80000000;
-  int32 = htonl(int32);
+  int32 = tobe32(int32);
   *((int *)p) = int32;
 
   item->ptr = item->pbuf;
@@ -1052,7 +1038,7 @@ BINN_PRIVATE BOOL IsValidBinnHeader(void *pbuf, int *ptype, int *pcount, int *ps
   int32 = *((unsigned char*)p);
   if (int32 & 0x80) {
     int32 = *((int*)p); p+=4;
-    int32 = ntohl(int32);
+    int32 = frombe32(int32);
     int32 &= 0x7FFFFFFF;
   } else {
     p++;
@@ -1063,7 +1049,7 @@ BINN_PRIVATE BOOL IsValidBinnHeader(void *pbuf, int *ptype, int *pcount, int *ps
   int32 = *((unsigned char*)p);
   if (int32 & 0x80) {
     int32 = *((int*)p); p+=4;
-    int32 = ntohl(int32);
+    int32 = frombe32(int32);
     int32 &= 0x7FFFFFFF;
   } else {
     p++;
@@ -1073,12 +1059,12 @@ BINN_PRIVATE BOOL IsValidBinnHeader(void *pbuf, int *ptype, int *pcount, int *ps
 #if 0
   // get the size
   int32 = *((int *)p); p+=4;
-  size = ntohl(int32);
+  size = frombe32(int32);
   size &= 0x7FFFFFFF;
 
   // get the count
   int32 = *((int *)p); p+=4;
-  count = ntohl(int32);
+  count = frombe32(int32);
   count &= 0x7FFFFFFF;
 #endif
 
@@ -1296,22 +1282,22 @@ BINN_PRIVATE BOOL GetValue(unsigned char *p, binn *value) {
     break;
   case BINN_STORAGE_WORD:
     value->vint16 = *((short *) p);
-    value->vint16 = ntohs(value->vint16);
+    value->vint16 = frombe16(value->vint16);
     value->ptr = &value->vint16;
     break;
   case BINN_STORAGE_DWORD:
     value->vint32 = *((int *) p);
-    value->vint32 = ntohl(value->vint32);
+    value->vint32 = frombe32(value->vint32);
     value->ptr = &value->vint32;
     break;
   case BINN_STORAGE_QWORD:
     value->vint64 = *((uint64 *) p);
-    value->vint64 = ntohll(value->vint64);
+    value->vint64 = frombe64(value->vint64);
     value->ptr = &value->vint64;
     break;
   case BINN_STORAGE_BLOB:
     value->size = *((int*)p); p+=4;
-    value->size = ntohl(value->size);
+    value->size = frombe32(value->size);
     value->ptr = p;
     break;
   case BINN_STORAGE_CONTAINER:
@@ -1322,7 +1308,7 @@ BINN_PRIVATE BOOL GetValue(unsigned char *p, binn *value) {
     DataSize = *((unsigned char*)p);
     if (DataSize & 0x80) {
       DataSize = *((int*)p); p+=4;
-      DataSize = ntohl(DataSize);
+      DataSize = frombe32(DataSize);
       DataSize &= 0x7FFFFFFF;
     } else {
       p++;
@@ -1502,7 +1488,7 @@ BINN_PRIVATE BOOL binn_read_pair(int expected_type, void *ptr, int pos, int *pid
     switch (type) {
       case BINN_MAP:
         int32 = *((int*)p); p += 4;
-        int32 = ntohl(int32);
+        int32 = frombe32(int32);
         if (p > plimit) return FALSE;
         id = int32;
         break;
@@ -1684,7 +1670,7 @@ BINN_PRIVATE BOOL binn_read_next_pair(int expected_type, binn_iter *iter, int *p
   switch (expected_type) {
     case BINN_MAP:
       int32 = *((int*)p); p += 4;
-      int32 = ntohl(int32);
+      int32 = frombe32(int32);
       if (p > iter->plimit) return FALSE;
       id = int32;
       if (pid) *pid = id;
@@ -3175,7 +3161,7 @@ BOOL APIENTRY binn_get_double(binn *value, double *pfloat) {
 
   if (type_family(value->type) == BINN_FAMILY_INT) {
     if (copy_int_value(value->ptr, &vint, value->type, BINN_INT64) == FALSE) return FALSE;
-    *pfloat = vint;
+    *pfloat = (double) vint;
     return TRUE;
   }
 
@@ -3188,7 +3174,7 @@ BOOL APIENTRY binn_get_double(binn *value, double *pfloat) {
     break;
   case BINN_STRING:
     if (is_integer((char*)value->ptr))
-      *pfloat = atoi64((char*)value->ptr);
+      *pfloat = (double) atoi64((char*)value->ptr);
     else if (is_float((char*)value->ptr))
       *pfloat = atof((char*)value->ptr);
     else

@@ -4,7 +4,6 @@
 #include <string.h>
 #include <math.h>  /* for fabs */
 #include <assert.h>
-#include "test_binn.h"
 #include "../src/binn.h"
 
 #define BINN_MAGIC            0x1F22B11F
@@ -17,61 +16,64 @@ extern void* (*malloc_fn)(int len);
 extern void* (*realloc_fn)(void *ptr, int len);
 extern void  (*free_fn)(void *ptr);
 
-uint64 htonll(uint64 input);
-#define ntohll htonll
-
 /*************************************************************************************/
 
+unsigned short tobe16(unsigned short input);
+unsigned int   tobe32(unsigned int input);
+uint64         tobe64(uint64 input);
+
 void test_endianess() {
-  short vshort1, vshort2;
-  int   vint1, vint2;
-  int64 value1, value2;
+  unsigned short vshort1, vshort2;
+  unsigned int   vint1, vint2;
+  uint64 value1, value2;
 
   printf("testing endianess... ");
 
-  /* htons */
+  /* tobe16 */
   vshort1 = 0x1122;
-  vshort2 = htons(vshort1);
+  vshort2 = tobe16(vshort1);
   assert(vshort2 == 0x2211);
-  vshort2 = htons(vshort2);
+  vshort2 = tobe16(vshort2);
   assert(vshort2 == vshort1);
 
   vshort1 = 0xF123;
-  vshort2 = htons(vshort1);
+  vshort2 = tobe16(vshort1);
   assert(vshort2 == 0x23F1);
-  vshort2 = htons(vshort2);
+  vshort2 = tobe16(vshort2);
   assert(vshort2 == vshort1);
 
   vshort1 = 0x0123;
-  vshort2 = htons(vshort1);
+  vshort2 = tobe16(vshort1);
   assert(vshort2 == 0x2301);
-  vshort2 = htons(vshort2);
+  vshort2 = tobe16(vshort2);
   assert(vshort2 == vshort1);
 
-  /* htonl */
+  /* tobe32 */
   vint1 = 0x11223344;
-  vint2 = htonl(vint1);
+  vint2 = tobe32(vint1);
   assert(vint2 == 0x44332211);
-  vint2 = htonl(vint2);
+  vint2 = tobe32(vint2);
   assert(vint2 == vint1);
 
   vint1 = 0xF1234580;
-  vint2 = htonl(vint1);
+  vint2 = tobe32(vint1);
   assert(vint2 == 0x804523F1);
-  vint2 = htonl(vint2);
+  vint2 = tobe32(vint2);
   assert(vint2 == vint1);
 
   vint1 = 0x00112233;
-  vint2 = htonl(vint1);
+  vint2 = tobe32(vint1);
   assert(vint2 == 0x33221100);
-  vint2 = htonl(vint2);
+  vint2 = tobe32(vint2);
   assert(vint2 == vint1);
 
-  /* htonll */
+  /* tobe64 */
   value1 = 0x1122334455667788;
-  value2 = htonll(value1);
+  value2 = tobe64(value1);
+  printf("v1: %llx\n", value1);
+  printf("v2: %llx\n", value2);
   assert(value2 == 0x8877665544332211);
-  value2 = htonll(value2);
+  value2 = tobe64(value2);
   assert(value2 == value1);
 
   printf("OK\n");
