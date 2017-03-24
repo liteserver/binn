@@ -29,6 +29,16 @@ void  (*free_fn)(void *ptr) = 0;
 #define __BIG_ENDIAN      0x1000
 #define __LITTLE_ENDIAN   0x0001
 #define __BYTE_ORDER    __LITTLE_ENDIAN
+#elif defined(__OpenBSD__) || defined(__NetBSD__) || defined(__FreeBSD__) || defined(__DragonFly__)
+#include <sys/endian.h>
+#define __BIG_ENDIAN      BIG_ENDIAN
+#define __LITTLE_ENDIAN   LITTLE_ENDIAN
+#define __BYTE_ORDER      BYTE_ORDER
+#elif defined(_AIX)
+#include <sys/machine.h>
+#define __BIG_ENDIAN      BIG_ENDIAN
+#define __LITTLE_ENDIAN   LITTLE_ENDIAN
+#define __BYTE_ORDER      BYTE_ORDER
 #else
 #include <endian.h>
 #endif
