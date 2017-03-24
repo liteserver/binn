@@ -834,7 +834,7 @@ ALWAYS_INLINE BOOL binn_map_get_object(void *map, int id, void **pvalue) {
 /***************************************************************************/
 
 // usage:
-//   if (binn_object_get_int32(obj, "multiplier", &multiplier) == FALSE) xxx;
+//   if (binn_object_get_int32(obj, "key", &value) == FALSE) xxx;
 
 ALWAYS_INLINE BOOL binn_object_get_int8(void *obj, char *key, signed char *pvalue) {
   return binn_object_get(obj, key, BINN_INT8, pvalue, NULL);

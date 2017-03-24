@@ -32,38 +32,62 @@ void test_endianess() {
   /* tobe16 */
   vshort1 = 0x1122;
   vshort2 = tobe16(vshort1);
+#if __BYTE_ORDER == __LITTLE_ENDIAN
   assert(vshort2 == 0x2211);
+#else
+  assert(vshort2 == 0x1122);
+#endif
   vshort2 = tobe16(vshort2);
   assert(vshort2 == vshort1);
 
   vshort1 = 0xF123;
   vshort2 = tobe16(vshort1);
+#if __BYTE_ORDER == __LITTLE_ENDIAN
   assert(vshort2 == 0x23F1);
+#else
+  assert(vshort2 == 0xF123);
+#endif
   vshort2 = tobe16(vshort2);
   assert(vshort2 == vshort1);
 
   vshort1 = 0x0123;
   vshort2 = tobe16(vshort1);
+#if __BYTE_ORDER == __LITTLE_ENDIAN
   assert(vshort2 == 0x2301);
+#else
+  assert(vshort2 == 0x0123);
+#endif
   vshort2 = tobe16(vshort2);
   assert(vshort2 == vshort1);
 
   /* tobe32 */
   vint1 = 0x11223344;
   vint2 = tobe32(vint1);
+#if __BYTE_ORDER == __LITTLE_ENDIAN
   assert(vint2 == 0x44332211);
+#else
+  assert(vint2 == 0x11223344);
+#endif
   vint2 = tobe32(vint2);
   assert(vint2 == vint1);
 
   vint1 = 0xF1234580;
   vint2 = tobe32(vint1);
+#if __BYTE_ORDER == __LITTLE_ENDIAN
   assert(vint2 == 0x804523F1);
+#else
+  assert(vint2 == 0xF1234580);
+#endif
   vint2 = tobe32(vint2);
   assert(vint2 == vint1);
 
   vint1 = 0x00112233;
   vint2 = tobe32(vint1);
+#if __BYTE_ORDER == __LITTLE_ENDIAN
   assert(vint2 == 0x33221100);
+#else
+  assert(vint2 == 0x00112233);
+#endif
   vint2 = tobe32(vint2);
   assert(vint2 == vint1);
 
@@ -72,7 +96,11 @@ void test_endianess() {
   value2 = tobe64(value1);
   printf("v1: %llx\n", value1);
   printf("v2: %llx\n", value2);
+#if __BYTE_ORDER == __LITTLE_ENDIAN
   assert(value2 == 0x8877665544332211);
+#else
+  assert(value2 == 0x1122334455667788);
+#endif
   value2 = tobe64(value2);
   assert(value2 == value1);
 
