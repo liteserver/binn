@@ -360,6 +360,20 @@ int    APIENTRY binn_type(void *ptr);
 int    APIENTRY binn_count(void *ptr);
 
 BOOL   APIENTRY binn_is_valid(void *ptr, int *ptype, int *pcount, int *psize);
+/* the function returns the values (type, count and size) and they don't need to be
+   initialized. these values are read from the buffer. example:
+
+   int type, count, size;
+   result = binn_is_valid(ptr, &type, &count, &size);
+*/
+BOOL   APIENTRY binn_is_valid_ex(void *ptr, int *ptype, int *pcount, int *psize);
+/* if some value is informed (type, count or size) then the function will check if 
+   the value returned from the serialized data matches the informed value. otherwise
+   the values must be initialized to zero. example:
+
+   int type=0, count=0, size = known_size;
+   result = binn_is_valid_ex(ptr, &type, &count, &size);
+*/
 
 BOOL   APIENTRY binn_is_struct(void *ptr);
 
