@@ -156,6 +156,11 @@ Use the included Visual Studio project in the src/win32 folder
 It will create the file `binn-1.0.dll`
 
 
+### On Android:
+
+Check for pre-compiled binaries in the [android-binn-native](https://github.com/litereplica/android-binn-native) project
+
+
 Regression Tests
 ----------------
 
