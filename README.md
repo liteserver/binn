@@ -73,8 +73,6 @@ You can check the [complete specification](specs.md)
 Usage Example
 -------------
 
-### C
-
 Writing
 
 ```c
@@ -107,33 +105,12 @@ name = binn_object_str(obj, "name");
 total = binn_object_double(obj, "total");
 ```
 
-### Javascript
-
-Header
-
-```javascript
-var binn = require('binn.js');
-```
-
-Writing
-
-```javascript
-var obj = {hello: 'world', number: 123};
-var data = binn.encode(obj);
-```
-
-Reading
-
-```javascript
-var obj = binn.decode(data);
-```
-
 ### More examples
 
 You can find more usage examples [here](usage.md) and in the [examples folder](examples)
 
 
-### Wrappers
+## Wrappers
 
  * Javascript: [liteserver/binn.js](https://github.com/liteserver/binn.js)
  * PHP: [ET-NiK/binn-php](https://github.com/ET-NiK/binn-php)
@@ -148,12 +125,12 @@ How to use
  1. Including the binn.c file in your project; or
  2. Linking to the binn library:
 
-#### On Linux:
+### On Linux:
 ```
 gcc myapp.c -lbinn
 ```
 
-#### On Windows:
+### On Windows:
 
 Include the `binn-1.0.lib` in your MSVC project
 
@@ -161,7 +138,7 @@ Include the `binn-1.0.lib` in your MSVC project
 Compiling the Library
 ---------------------
 
-#### On Linux:
+### On Linux:
 
 ```
 git clone https://github.com/liteserver/binn
@@ -172,7 +149,7 @@ sudo make install
 It will create the file `libbinn.so.1.0`
 
 
-#### On Windows:
+### On Windows:
 
 Use the included Visual Studio project in the src/win32 folder
 
@@ -182,14 +159,14 @@ It will create the file `binn-1.0.dll`
 Regression Tests
 ----------------
 
-On Linux:
+### On Linux:
 
 ```
 cd binn
 make test
 ```
 
-On Windows:
+### On Windows:
 
 Use the included Visual Studio project in the test/win32 folder
 
