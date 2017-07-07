@@ -68,7 +68,7 @@ A json data such as {"hello":"world"} is serialized in binn as:
   \x05world\x00  // value (null terminated)
 </pre>
 
-You can check the [complete specification](specs.md)
+You can check the [complete specification](spec.md)
 
 Usage Example
 -------------
