@@ -1,7 +1,7 @@
 Binn Interface & Usage
 ======================
 
-###Containers
+### Containers
 
 There are 3 types of containers:
 
@@ -16,7 +16,7 @@ The values are stored in a sequential order:
 
 > [2, 5, 9.1, "value", true]
 
-####Writing
+#### Writing
 
 ```c
 binn *list;
@@ -36,7 +36,7 @@ send(sock, binn_ptr(list), binn_size(list));
 binn_free(list);
 ```
 
-####Reading by position
+#### Reading by position
 
 ```c
 int id;
@@ -48,7 +48,7 @@ rate = binn_list_double(list, 2);
 name = binn_list_str(list, 3);
 ```
 
-####Reading values of the same type
+#### Reading values of the same type
 
 ```c
 int i, count;
@@ -60,7 +60,7 @@ for(i=1; i<=count; i++) {
 }
 ```
 
-####Reading using for each
+#### Reading using for each
 
 ```c
 binn_iter iter;
@@ -86,7 +86,7 @@ You can define the integer keys in a header file shared between the applications
 #define USER_VALUE 13
 ```
 
-####Writing
+#### Writing
 
 ```c
 binn *map;
@@ -106,7 +106,7 @@ send(sock, binn_ptr(map), binn_size(map));
 binn_free(map);
 ```
 
-####Reading by key
+#### Reading by key
 
 ```c
 int id;
@@ -118,7 +118,7 @@ name = binn_map_str(map, USER_NAME);
 note = binn_map_double(map, USER_VALUE);
 ```
 
-####Reading sequentially
+#### Reading sequentially
 
 ```c
 binn_iter iter;
@@ -137,7 +137,7 @@ The values are stored with string keys:
 
 > {"name": "John", "grade": 8.5, "active": true}
 
-####Writing
+#### Writing
 
 ```c
 binn *obj;
@@ -157,7 +157,7 @@ send(sock, binn_ptr(obj), binn_size(obj));
 binn_free(obj);
 ```
 
-####Reading by key
+#### Reading by key
 
 ```c
 int id;
@@ -169,7 +169,7 @@ name = binn_object_str(obj, "name");
 total = binn_object_double(obj, "total");
 ```
 
-####Reading sequentially
+#### Reading sequentially
 
 ```c
 binn_iter iter;
@@ -181,18 +181,19 @@ binn_object_foreach(obj, key, value) {
 }
 ```
 
--
-###Containers inside containers
+---
+
+### Containers inside containers
 
 We can put containers inside others (a list inside of an object, a list of objects, a list of maps...)
 
-####Example 1
+#### Example 1
 
 A list inside of an object
 
 > {id: 123, name: "John", values: [2.5, 7.35, 9.15]}
 
-#####Writing
+##### Writing
 
 ```c
 binn *obj, *list;
@@ -219,7 +220,7 @@ send(sock, binn_ptr(obj), binn_size(obj));
 binn_free(obj);
 ```
 
-#####Reading
+##### Reading
 
 ```c
 int id, i, count;
@@ -237,13 +238,13 @@ for(i=1; i<=count; i++) {
 }
 ```
 
-####Example 2
+#### Example 2
 
 A list of objects
 
 > [ {name: "John", email: "john@gmail.com"} , {name: "Eric", email: "eric@gmail.com"} ]
 
-#####Writing
+##### Writing
 
 ```c
 binn *list, *obj;
@@ -274,7 +275,7 @@ send(sock, binn_ptr(list), binn_size(list));
 binn_free(list);
 ```
 
-#####Reading
+##### Reading
 
 ```c
 int i, count;
@@ -289,12 +290,13 @@ for(i=1; i<=count; i++) {
 }
 ```
 
-####Note
+#### Note
 
 When read, the internal containers are returned as static pointers that should not be "freed".
 
--
-###Binn Values
+---
+
+### Binn Values
 
 Some functions return a structure called binn value. Here is an example of dealing with them:
 
