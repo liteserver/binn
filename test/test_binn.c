@@ -372,7 +372,7 @@ void test1() {
   assert(binn_new(0, 0, NULL) == INVALID_BINN);
   assert(binn_new(5, 0, NULL) == INVALID_BINN);
   assert(binn_new(BINN_MAP, -1, NULL) == INVALID_BINN);
-  ptr = &obj1;  // create a valid pointer
+  ptr = (char *) &obj1;  // create a valid pointer
   assert(binn_new(BINN_MAP, -1, ptr) == INVALID_BINN);
   assert(binn_new(BINN_MAP, MIN_BINN_SIZE-1, ptr) == INVALID_BINN);
 

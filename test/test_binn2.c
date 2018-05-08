@@ -158,10 +158,11 @@ char * currency_to_str(int64 value) {
 /*************************************************************************************/
 
 int64 float_to_currency(double value) {
+  char buf[128];
 
-  snprintf(tmp, 127, "%.4e", value);
+  snprintf(buf, 127, "%.4f", value);
 
-  return str_to_currency(tmp);
+  return str_to_currency(buf);
 
 }
 
@@ -405,7 +406,7 @@ void test_binn_read(void *objptr) {
 
   ptr = 0;
   assert(binn_object_get(objptr, "str", BINN_STRING, &ptr, NULL) == TRUE);
-  printf("ptr: (%d) '%s'\n", ptr, ptr);
+  printf("ptr: (%p) '%s'\n", ptr, ptr);
   assert(strcmp(ptr, "the value") == 0);
 
 
@@ -428,18 +429,18 @@ void test_binn_read(void *objptr) {
 
 
   assert(binn_object_get(objptr, "list", BINN_LIST, &listptr, NULL) == TRUE);
-  printf("obj ptr: %d  list ptr: %d\n", objptr, listptr);
+  printf("obj ptr: %p  list ptr: %p\n", objptr, listptr);
   assert(listptr != 0);
   assert(listptr > objptr);
 
   vint32 = 0;
-  if (binn_list_get(listptr, 2, BINN_INT32, &vint32, NULL) == TRUE);
+  assert(binn_list_get(listptr, 2, BINN_INT32, &vint32, NULL) == TRUE);
   printf("int32: %d\n", vint32);
   assert(vint32 == 123);
 
   ptr = 0;
-  if (binn_list_get(listptr, 3, BINN_STRING, &ptr, NULL) == TRUE);
-  printf("ptr: (%d) '%s'\n", ptr, ptr);
+  assert(binn_list_get(listptr, 3, BINN_STRING, &ptr, NULL) == TRUE);
+  printf("ptr: (%p) '%s'\n", ptr, ptr);
   assert(strcmp(ptr, "this is a string") == 0);
 
 
@@ -502,7 +503,7 @@ void test_binn_read(void *objptr) {
 
   ptr = 0;
   assert(binn_object_get_str(objptr, "str", &ptr) == TRUE);
-  printf("ptr: (%d) '%s'\n", ptr, ptr);
+  printf("ptr: (%p) '%s'\n", ptr, ptr);
   assert(strcmp(ptr, "the value") == 0);
 
 
@@ -524,18 +525,18 @@ void test_binn_read(void *objptr) {
 
 
   assert(binn_object_get_list(objptr, "list", &listptr) == TRUE);
-  printf("obj ptr: %d  list ptr: %d\n", objptr, listptr);
+  printf("obj ptr: %p  list ptr: %p\n", objptr, listptr);
   assert(listptr != 0);
   assert(listptr > objptr);
 
   vint32 = 0;
-  if (binn_list_get_int32(listptr, 2, &vint32) == TRUE);
+  assert(binn_list_get_int32(listptr, 2, &vint32) == TRUE);
   printf("int32: %d\n", vint32);
   assert(vint32 == 123);
 
   ptr = 0;
-  if (binn_list_get_str(listptr, 3, &ptr) == TRUE);
-  printf("ptr: (%d) '%s'\n", ptr, ptr);
+  assert(binn_list_get_str(listptr, 3, &ptr) == TRUE);
+  printf("ptr: (%p) '%s'\n", ptr, ptr);
   assert(strcmp(ptr, "this is a string") == 0);
 
 
@@ -587,7 +588,7 @@ void test_binn_read(void *objptr) {
 
 
   ptr = binn_object_str(objptr, "str");
-  printf("ptr: (%d) '%s'\n", ptr, ptr);
+  printf("ptr: (%p) '%s'\n", ptr, ptr);
   assert(strcmp(ptr, "the value") == 0);
 
 
@@ -605,7 +606,7 @@ void test_binn_read(void *objptr) {
 
 
   listptr = binn_object_list(objptr, "list");
-  printf("obj ptr: %d  list ptr: %d\n", objptr, listptr);
+  printf("obj ptr: %p  list ptr: %p\n", objptr, listptr);
   assert(listptr != 0);
   assert(listptr > objptr);
 
@@ -614,7 +615,7 @@ void test_binn_read(void *objptr) {
   assert(vint32 == 123);
 
   ptr = binn_list_str(listptr, 3);
-  printf("ptr: (%d) '%s'\n", ptr, ptr);
+  printf("ptr: (%p) '%s'\n", ptr, ptr);
   assert(strcmp(ptr, "this is a string") == 0);
 
 
@@ -660,6 +661,7 @@ void test_binn_read(void *objptr) {
   assert(value.type == BINN_UINT64);
   assert(value.vuint64 == 1234567890123);
 
+  puts("reading... OK");
 
 }
 
@@ -670,6 +672,8 @@ void init_udts() {
   unsigned short date;
   uint64 value;
   void *ptr;
+
+  puts("testing UDTs...");
 
   assert(strcmp(date_to_str(str_to_date("1950-08-15")), "1950-08-15") == 0);
   assert(strcmp(date_to_str(str_to_date("1900-12-01")), "1900-12-01") == 0);
@@ -692,6 +696,17 @@ void init_udts() {
   printf("curr=%s\n", currency_to_str(str_to_currency("123.456789")) );
   printf("curr=%s\n", currency_to_str(str_to_currency("0.1234")) );
   printf("curr=%s\n", currency_to_str(str_to_currency(".1234")) );
+
+  assert(float_to_currency(2.5) == 25000);
+  assert(float_to_currency(5) == 50000);
+  assert(str_to_currency("1.1") == 11000);
+  assert(str_to_currency("12") == 120000);
+  assert(mul_currency(20000, 20000) == 40000);
+  assert(mul_currency(20000, 25000) == 50000);
+  assert(mul_currency(30000, 40000) == 120000);
+  assert(div_currency(80000, 20000) == 40000);
+  assert(div_currency(120000, 40000) == 30000);
+  assert(div_currency(100000, 40000) == 25000);
 
   printf("1.1 * 2.5 = %s\n", currency_to_str(mul_currency(str_to_currency("1.1"), float_to_currency(2.5))) );
   printf("12 / 5 = %s\n", currency_to_str(div_currency(str_to_currency("12"), float_to_currency(5))) );
@@ -765,6 +780,8 @@ void init_udts() {
 
 
   binn_free(obj);
+
+  puts("testing UDTs... OK");
 
 }
 
