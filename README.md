@@ -125,20 +125,23 @@ How to use
  1. Including the binn.c file in your project; or
  2. Linking to the binn library:
 
-### On Linux:
+### On Linux and MacOSX:
 ```
 gcc myapp.c -lbinn
 ```
 
 ### On Windows:
 
-Include the `binn-1.0.lib` in your MSVC project
+Include the `binn-1.0.lib` in your MSVC project or use MinGW:
+```
+gcc myapp.c -lbinn-1.0
+```
 
 
 Compiling the Library
 ---------------------
 
-### On Linux:
+### On Linux and MacOSX:
 
 ```
 git clone https://github.com/liteserver/binn
@@ -146,14 +149,19 @@ cd binn
 make
 sudo make install
 ```
-It will create the file `libbinn.so.1.0`
+It will create the file `libbinn.so.1.0` on Linux and `libbinn.1.dylib` on MacOSX
 
 
 ### On Windows:
 
-Use the included Visual Studio project in the src/win32 folder
+Use the included Visual Studio project in the src/win32 folder or compile it using MinGW:
 
-It will create the file `binn-1.0.dll`
+```
+git clone https://github.com/liteserver/binn
+cd binn
+make
+```
+Both will create the file `binn-1.0.dll`
 
 
 ### On Android:
@@ -164,16 +172,16 @@ Check for pre-compiled binaries in the [android-binn-native](https://github.com/
 Regression Tests
 ----------------
 
-### On Linux:
+### On Linux, MacOSX and Windows (MinGW):
 
 ```
 cd binn
 make test
 ```
 
-### On Windows:
+### On Windows (Visual Studio):
 
-Use the included Visual Studio project in the test/win32 folder
+Use the included project in the test/win32 folder
 
 
 Reliability
