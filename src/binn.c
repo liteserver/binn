@@ -26,38 +26,35 @@ void  (*free_fn)(void *ptr) = 0;
 /***************************************************************************/
 
 #if defined(__APPLE__) || defined(_WIN32)
-#define __BIG_ENDIAN      0x1000
-#define __LITTLE_ENDIAN   0x0001
-#define __BYTE_ORDER    __LITTLE_ENDIAN
+#define BIG_ENDIAN      0x1000
+#define LITTLE_ENDIAN   0x0001
+#define BYTE_ORDER      LITTLE_ENDIAN
 #elif defined(__OpenBSD__) || defined(__NetBSD__) || defined(__FreeBSD__) || defined(__DragonFly__)
 #include <sys/endian.h>
-#define __BIG_ENDIAN      BIG_ENDIAN
-#define __LITTLE_ENDIAN   LITTLE_ENDIAN
-#define __BYTE_ORDER      BYTE_ORDER
 #elif defined(_AIX)
 #include <sys/machine.h>
-#define __BIG_ENDIAN      BIG_ENDIAN
-#define __LITTLE_ENDIAN   LITTLE_ENDIAN
-#define __BYTE_ORDER      BYTE_ORDER
 #else
 #include <endian.h>
 #endif
 
-#ifndef __BYTE_ORDER
-#error "__BYTE_ORDER not defined"
+#ifndef BYTE_ORDER
+#error "BYTE_ORDER not defined"
 #endif
-#ifndef __BIG_ENDIAN
-#error "__BIG_ENDIAN not defined"
+#ifndef BIG_ENDIAN
+#error "BIG_ENDIAN not defined"
 #endif
-#ifndef __LITTLE_ENDIAN
-#error "__LITTLE_ENDIAN not defined"
+#ifndef LITTLE_ENDIAN
+#error "LITTLE_ENDIAN not defined"
 #endif
-#if __BIG_ENDIAN == __LITTLE_ENDIAN
-#error "__BIG_ENDIAN == __LITTLE_ENDIAN"
+#if BIG_ENDIAN == LITTLE_ENDIAN
+#error "BIG_ENDIAN == LITTLE_ENDIAN"
+#endif
+#if BYTE_ORDER!=BIG_ENDIAN && BYTE_ORDER!=LITTLE_ENDIAN
+#error "BYTE_ORDER not supported"
 #endif
 
 BINN_PRIVATE unsigned short tobe16(unsigned short input) {
-#if __BYTE_ORDER == __BIG_ENDIAN
+#if BYTE_ORDER == BIG_ENDIAN
   return input;
 #else
   unsigned short result;
@@ -72,7 +69,7 @@ BINN_PRIVATE unsigned short tobe16(unsigned short input) {
 }
 
 BINN_PRIVATE unsigned int tobe32(unsigned int input) {
-#if __BYTE_ORDER == __BIG_ENDIAN
+#if BYTE_ORDER == BIG_ENDIAN
   return input;
 #else
   unsigned int result;
@@ -89,7 +86,7 @@ BINN_PRIVATE unsigned int tobe32(unsigned int input) {
 }
 
 BINN_PRIVATE uint64 tobe64(uint64 input) {
-#if __BYTE_ORDER == __BIG_ENDIAN
+#if BYTE_ORDER == BIG_ENDIAN
   return input;
 #else
   uint64 result;
@@ -424,7 +421,7 @@ BINN_PRIVATE BOOL CheckAllocation(binn *item, int add_size) {
 
 /***************************************************************************/
 
-#if __BYTE_ORDER == __BIG_ENDIAN
+#if BYTE_ORDER == BIG_ENDIAN
 
 BINN_PRIVATE int get_storage_size(int storage_type) {
 
@@ -680,7 +677,7 @@ BINN_PRIVATE void * compress_int(int *pstorage_type, int *ptype, void *psource) 
   int64  vint;
   uint64 vuint;
   char *pvalue;
-#if __BYTE_ORDER == __BIG_ENDIAN
+#if BYTE_ORDER == BIG_ENDIAN
   int size1, size2;
 #endif
 
@@ -750,7 +747,7 @@ loc_exit:
     *ptype = type2;
     storage_type2 = binn_get_write_storage(type2);
     *pstorage_type = storage_type2;
-#if __BYTE_ORDER == __BIG_ENDIAN
+#if BYTE_ORDER == BIG_ENDIAN
     size1 = get_storage_size(storage_type);
     size2 = get_storage_size(storage_type2);
     pvalue += (size1 - size2);
@@ -1426,7 +1423,7 @@ BINN_PRIVATE BOOL GetValue(unsigned char *p, binn *value) {
 
 /***************************************************************************/
 
-#if __BYTE_ORDER == __LITTLE_ENDIAN
+#if BYTE_ORDER == LITTLE_ENDIAN
 
 // on little-endian devices we store the value so we can return a pointer to integers.
 // it's valid only for single-threaded apps. multi-threaded apps must use the _get_ functions instead.
@@ -1654,7 +1651,7 @@ void * APIENTRY binn_map_read_pair(void *ptr, int pos, int *pid, int *ptype, int
   if (binn_map_get_pair(ptr, pos, pid, &value) == FALSE) return NULL;
   if (ptype) *ptype = value.type;
   if (psize) *psize = value.size;
-#if __BYTE_ORDER == __LITTLE_ENDIAN
+#if BYTE_ORDER == LITTLE_ENDIAN
   return store_value(&value);
 #else
   return value.ptr;
@@ -1670,7 +1667,7 @@ void * APIENTRY binn_object_read_pair(void *ptr, int pos, char *pkey, int *ptype
   if (binn_object_get_pair(ptr, pos, pkey, &value) == FALSE) return NULL;
   if (ptype) *ptype = value.type;
   if (psize) *psize = value.size;
-#if __BYTE_ORDER == __LITTLE_ENDIAN
+#if BYTE_ORDER == LITTLE_ENDIAN
   return store_value(&value);
 #else
   return value.ptr;
@@ -1840,7 +1837,7 @@ void * APIENTRY binn_list_read_next(binn_iter *iter, int *ptype, int *psize) {
   if (binn_list_next(iter, &value) == FALSE) return NULL;
   if (ptype) *ptype = value.type;
   if (psize) *psize = value.size;
-#if __BYTE_ORDER == __LITTLE_ENDIAN
+#if BYTE_ORDER == LITTLE_ENDIAN
   return store_value(&value);
 #else
   return value.ptr;
@@ -1856,7 +1853,7 @@ void * APIENTRY binn_map_read_next(binn_iter *iter, int *pid, int *ptype, int *p
   if (binn_map_next(iter, pid, &value) == FALSE) return NULL;
   if (ptype) *ptype = value.type;
   if (psize) *psize = value.size;
-#if __BYTE_ORDER == __LITTLE_ENDIAN
+#if BYTE_ORDER == LITTLE_ENDIAN
   return store_value(&value);
 #else
   return value.ptr;
@@ -1872,7 +1869,7 @@ void * APIENTRY binn_object_read_next(binn_iter *iter, char *pkey, int *ptype, i
   if (binn_object_next(iter, pkey, &value) == FALSE) return NULL;
   if (ptype) *ptype = value.type;
   if (psize) *psize = value.size;
-#if __BYTE_ORDER == __LITTLE_ENDIAN
+#if BYTE_ORDER == LITTLE_ENDIAN
   return store_value(&value);
 #else
   return value.ptr;
@@ -2425,7 +2422,7 @@ void * APIENTRY binn_list_read(void *list, int pos, int *ptype, int *psize) {
   if (binn_list_get_value(list, pos, &value) == FALSE) return NULL;
   if (ptype) *ptype = value.type;
   if (psize) *psize = value.size;
-#if __BYTE_ORDER == __LITTLE_ENDIAN
+#if BYTE_ORDER == LITTLE_ENDIAN
   return store_value(&value);
 #else
   return value.ptr;
@@ -2441,7 +2438,7 @@ void * APIENTRY binn_map_read(void *map, int id, int *ptype, int *psize) {
   if (binn_map_get_value(map, id, &value) == FALSE) return NULL;
   if (ptype) *ptype = value.type;
   if (psize) *psize = value.size;
-#if __BYTE_ORDER == __LITTLE_ENDIAN
+#if BYTE_ORDER == LITTLE_ENDIAN
   return store_value(&value);
 #else
   return value.ptr;
@@ -2457,7 +2454,7 @@ void * APIENTRY binn_object_read(void *obj, char *key, int *ptype, int *psize) {
   if (binn_object_get_value(obj, key, &value) == FALSE) return NULL;
   if (ptype) *ptype = value.type;
   if (psize) *psize = value.size;
-#if __BYTE_ORDER == __LITTLE_ENDIAN
+#if BYTE_ORDER == LITTLE_ENDIAN
   return store_value(&value);
 #else
   return value.ptr;
