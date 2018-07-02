@@ -25,10 +25,12 @@ void  (*free_fn)(void *ptr) = 0;
 
 /***************************************************************************/
 
-#if defined(__APPLE__) || defined(_WIN32)
+#if defined(_WIN32)
 #define BIG_ENDIAN      0x1000
 #define LITTLE_ENDIAN   0x0001
 #define BYTE_ORDER      LITTLE_ENDIAN
+#elif defined(__APPLE__)
+/* macros already defined */
 #elif defined(__OpenBSD__) || defined(__NetBSD__) || defined(__FreeBSD__) || defined(__DragonFly__)
 #include <sys/endian.h>
 #elif defined(_AIX)
