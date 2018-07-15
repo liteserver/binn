@@ -25,6 +25,12 @@ void  (*free_fn)(void *ptr) = 0;
 
 /***************************************************************************/
 
+#if defined(__alpha__) || defined(__hppa__) || defined(__mips__) || defined(__powerpc__) || defined(__sparc__)
+#define BINN_ONLY_ALIGNED_ACCESS
+#elif ( defined(__arm__) || defined(__aarch64__) ) && !defined(__ARM_FEATURE_UNALIGNED)
+#define BINN_ONLY_ALIGNED_ACCESS
+#endif
+
 #if defined(_WIN32)
 #define BIG_ENDIAN      0x1000
 #define LITTLE_ENDIAN   0x0001
@@ -55,58 +61,83 @@ void  (*free_fn)(void *ptr) = 0;
 #error "BYTE_ORDER not supported"
 #endif
 
-BINN_PRIVATE unsigned short tobe16(unsigned short input) {
-#if BYTE_ORDER == BIG_ENDIAN
-  return input;
-#else
-  unsigned short result;
-  unsigned char *source = (unsigned char *) &input;
-  unsigned char *dest = (unsigned char *) &result;
+typedef unsigned short int     u16;
+typedef unsigned int           u32;
+typedef unsigned long long int u64;
 
+BINN_PRIVATE void copy_be16(u16 *pdest, u16 *psource) {
+#if BYTE_ORDER == LITTLE_ENDIAN
+  unsigned char *source = (unsigned char *) psource;
+  unsigned char *dest = (unsigned char *) pdest;
   dest[0] = source[1];
   dest[1] = source[0];
-
-  return result;
+#else // if BYTE_ORDER == BIG_ENDIAN
+#ifdef BINN_ONLY_ALIGNED_ACCESS
+  if (psource % 2 == 0){  // address aligned to 16 bit
+    *pdest = *psource;
+  } else {
+    unsigned char *source = (unsigned char *) psource;
+    unsigned char *dest = (unsigned char *) pdest;
+    dest[0] = source[0];  // indexes are the same
+    dest[1] = source[1];
+  }
+#else
+  *pdest = *psource;
+#endif
 #endif
 }
 
-BINN_PRIVATE unsigned int tobe32(unsigned int input) {
-#if BYTE_ORDER == BIG_ENDIAN
-  return input;
-#else
-  unsigned int result;
-  unsigned char *source = (unsigned char *) &input;
-  unsigned char *dest = (unsigned char *) &result;
-
+BINN_PRIVATE void copy_be32(u32 *pdest, u32 *psource) {
+#if BYTE_ORDER == LITTLE_ENDIAN
+  unsigned char *source = (unsigned char *) psource;
+  unsigned char *dest = (unsigned char *) pdest;
   dest[0] = source[3];
   dest[1] = source[2];
   dest[2] = source[1];
   dest[3] = source[0];
-
-  return result;
+#else // if BYTE_ORDER == BIG_ENDIAN
+#ifdef BINN_ONLY_ALIGNED_ACCESS
+  if (psource % 4 == 0){  // address aligned to 32 bit
+    *pdest = *psource;
+  } else {
+    unsigned char *source = (unsigned char *) psource;
+    unsigned char *dest = (unsigned char *) pdest;
+    dest[0] = source[0];  // indexes are the same
+    dest[1] = source[1];
+    dest[2] = source[2];
+    dest[3] = source[3];
+  }
+#else
+  *pdest = *psource;
+#endif
 #endif
 }
 
-BINN_PRIVATE uint64 tobe64(uint64 input) {
-#if BYTE_ORDER == BIG_ENDIAN
-  return input;
-#else
-  uint64 result;
-  unsigned char *source = (unsigned char *) &input;
-  unsigned char *dest = (unsigned char *) &result;
+BINN_PRIVATE void copy_be64(u64 *pdest, u64 *psource) {
+#if BYTE_ORDER == LITTLE_ENDIAN
+  unsigned char *source = (unsigned char *) psource;
+  unsigned char *dest = (unsigned char *) pdest;
   int i;
-
   for (i=0; i < 8; i++) {
     dest[i] = source[7-i];
   }
-
-  return result;
+#else // if BYTE_ORDER == BIG_ENDIAN
+#ifdef BINN_ONLY_ALIGNED_ACCESS
+  if (psource % 8 == 0){  // address aligned to 64 bit
+    *pdest = *psource;
+  } else {
+    unsigned char *source = (unsigned char *) psource;
+    unsigned char *dest = (unsigned char *) pdest;
+    int i;
+    for (i=0; i < 8; i++) {
+      dest[i] = source[i];  // indexes are the same
+    }
+  }
+#else
+  *pdest = *psource;
+#endif
 #endif
 }
-
-#define frombe16 tobe16
-#define frombe32 tobe32
-#define frombe64 tobe64
 
 /***************************************************************************/
 
@@ -476,8 +507,7 @@ BINN_PRIVATE unsigned char * AdvanceDataPos(unsigned char *p, unsigned char *pli
     break;
   case BINN_STORAGE_BLOB:
     if (p + sizeof(int) - 1 > plimit) return 0;
-    DataSize = *((int *)p);
-    DataSize = frombe32(DataSize);
+    copy_be32((u32*)&DataSize, (u32*)p);
     p += 4 + DataSize;
     break;
   case BINN_STORAGE_CONTAINER:
@@ -485,8 +515,7 @@ BINN_PRIVATE unsigned char * AdvanceDataPos(unsigned char *p, unsigned char *pli
     DataSize = *((unsigned char*)p);
     if (DataSize & 0x80) {
       if (p + sizeof(int) - 1 > plimit) return 0;
-      DataSize = *((int*)p);
-      DataSize = frombe32(DataSize);
+      copy_be32((u32*)&DataSize, (u32*)p);
       DataSize &= 0x7FFFFFFF;
     }
     DataSize--;  // remove the type byte already added before
@@ -497,9 +526,9 @@ BINN_PRIVATE unsigned char * AdvanceDataPos(unsigned char *p, unsigned char *pli
     DataSize = *((unsigned char*)p);
     if (DataSize & 0x80) {
       if (p + sizeof(int) - 1 > plimit) return 0;
-      DataSize = *((int*)p); p+=4;
-      DataSize = frombe32(DataSize);
+      copy_be32((u32*)&DataSize, (u32*)p);
       DataSize &= 0x7FFFFFFF;
+      p+=4;
     } else {
       p++;
     }
@@ -528,8 +557,8 @@ BINN_PRIVATE unsigned char * SearchForID(unsigned char *p, int header_size, int 
 
   // search for the ID in all the arguments.
   for (i = 0; i < numitems; i++) {
-    int32 = *((int*)p); p += 4;
-    int32 = frombe32(int32);
+    copy_be32((u32*)&int32, (u32*)p);
+    p += 4;
     if (p > plimit) break;
     // Compare if the IDs are equal.
     if (int32 == id) return p;
@@ -644,7 +673,6 @@ BINN_PRIVATE BOOL binn_object_set_raw(binn *item, char *key, int type, void *pva
 
 BINN_PRIVATE BOOL binn_map_set_raw(binn *item, int id, int type, void *pvalue, int size) {
   unsigned char *p;
-  int int32;
 
   if ((item == NULL) || (item->type != BINN_MAP) || (item->writable == FALSE)) return FALSE;
 
@@ -656,9 +684,8 @@ BINN_PRIVATE BOOL binn_map_set_raw(binn *item, int id, int type, void *pvalue, i
 
   if (CheckAllocation(item, 4) == FALSE) return FALSE;  // 4 bytes used for the id.
 
-  int32 = tobe32(id);
   p = ((unsigned char *) item->pbuf) + item->used_size;
-  *((int *)p) = int32;
+  copy_be32((u32*)p, (u32*)&id);
   item->used_size += 4;
 
   if (AddValue(item, type, pvalue, size) == FALSE) {
@@ -765,10 +792,8 @@ loc_exit:
 BINN_PRIVATE int type_family(int type);
 
 BINN_PRIVATE BOOL AddValue(binn *item, int type, void *pvalue, int size) {
-  int   int32, ArgSize, storage_type, extra_type;
-  short int16;
-  uint64 int64;
-  unsigned char *p, *ptr;
+  int int32, ArgSize, storage_type, extra_type;
+  unsigned char *p;
 
   binn_get_type_info(type, &storage_type, &extra_type);
 
@@ -834,15 +859,16 @@ BINN_PRIVATE BOOL AddValue(binn *item, int type, void *pvalue, int size) {
 
   // If the data is not a container, store the data type
   if (storage_type != BINN_STORAGE_CONTAINER) {
-    ptr = (unsigned char *) &type;
     if (type > 255) {
-      type = tobe16(type);  // correct the endianess, if needed
-      *p = *ptr; p++;
+      u16 type16 = type;
+      copy_be16((u16*)p, (u16*)&type16);
+      p += 2;
+      item->used_size += 2;
+    } else {
+      *p = type;
+      p++;
       item->used_size++;
-      ptr++;
     }
-    *p = *ptr; p++;
-    item->used_size++;
   }
 
   switch (storage_type) {
@@ -850,34 +876,23 @@ BINN_PRIVATE BOOL AddValue(binn *item, int type, void *pvalue, int size) {
       // Nothing to do.
       break;
     case BINN_STORAGE_BYTE:
-      //*((char *) p) = (char) Value;
       *((char *) p) = *((char *) pvalue);
       item->used_size += 1;
       break;
     case BINN_STORAGE_WORD:
-      //int16 = tobe16( (short) Value);
-      int16 = *((short *) pvalue);
-      int16 = tobe16(int16);
-      *((short *) p) = int16;
+      copy_be16((u16*)p, (u16*)pvalue);
       item->used_size += 2;
       break;
     case BINN_STORAGE_DWORD:
-      //int32 = tobe32( (int) Value);
-      int32 = *((int *) pvalue);
-      int32 = tobe32(int32);
-      *((int *) p) = int32;
+      copy_be32((u32*)p, (u32*)pvalue);
       item->used_size += 4;
       break;
     case BINN_STORAGE_QWORD:
-      // is there an htond or htonq to be used with qwords? (64 bits)
-      int64 = *((uint64 *) pvalue);
-      int64 = tobe64(int64);
-      *((uint64 *) p) = int64;
+      copy_be64((u64*)p, (u64*)pvalue);
       item->used_size += 8;
       break;
     case BINN_STORAGE_BLOB:
-      int32 = tobe32(size);
-      *((int *) p) = int32;
+      copy_be32((u32*)p, (u32*)&size);
       p += 4;
       memcpy(p, pvalue, size);
       item->used_size += 4 + size;
@@ -885,8 +900,7 @@ BINN_PRIVATE BOOL AddValue(binn *item, int type, void *pvalue, int size) {
     case BINN_STORAGE_STRING:
       if (size > 127) {
         int32 = size | 0x80000000;
-        int32 = tobe32(int32);
-        *((int *) p) = int32;
+        copy_be32((u32*)p, (u32*)&int32);
         p += 4;
         item->used_size += 4;
       } else {
@@ -929,8 +943,7 @@ BINN_PRIVATE BOOL binn_save_header(binn *item) {
     p -= 4;
     size += 3;
     int32 = item->count | 0x80000000;
-    int32 = tobe32(int32);
-    *((int *)p) = int32;
+    copy_be32((u32*)p, (u32*)&int32);
   } else {
     p--;
     *p = (unsigned char) item->count;
@@ -941,8 +954,7 @@ BINN_PRIVATE BOOL binn_save_header(binn *item) {
     p -= 4;
     size += 3;
     int32 = size | 0x80000000;
-    int32 = tobe32(int32);
-    *((int *)p) = int32;
+    copy_be32((u32*)p, (u32*)&int32);
   } else {
     p--;
     *p = (unsigned char) size;
@@ -967,12 +979,11 @@ BINN_PRIVATE BOOL binn_save_header(binn *item) {
   *p = byte; p++;
   // write the size
   int32 = item->used_size | 0x80000000;
-  int32 = tobe32(int32);
-  *((int *)p) = int32; p+=4;
+  copy_be32((u32*)p, (u32*)&int32);
+  p+=4;
   // write the count
   int32 = item->count | 0x80000000;
-  int32 = tobe32(int32);
-  *((int *)p) = int32;
+  copy_be32((u32*)p, (u32*)&int32);
 
   item->ptr = item->pbuf;
   item->size = item->used_size;
@@ -1065,9 +1076,9 @@ BINN_PRIVATE BOOL IsValidBinnHeader(void *pbuf, int *ptype, int *pcount, int *ps
   int32 = *((unsigned char*)p);
   if (int32 & 0x80) {
     if (plimit && p + sizeof(int) - 1 > plimit) return FALSE;
-    int32 = *((int*)p); p+=4;
-    int32 = frombe32(int32);
+    copy_be32((u32*)&int32, (u32*)p);
     int32 &= 0x7FFFFFFF;
+    p+=4;
   } else {
     p++;
   }
@@ -1078,9 +1089,9 @@ BINN_PRIVATE BOOL IsValidBinnHeader(void *pbuf, int *ptype, int *pcount, int *ps
   int32 = *((unsigned char*)p);
   if (int32 & 0x80) {
     if (plimit && p + sizeof(int) - 1 > plimit) return FALSE;
-    int32 = *((int*)p); p+=4;
-    int32 = frombe32(int32);
+    copy_be32((u32*)&int32, (u32*)p);
     int32 &= 0x7FFFFFFF;
+    p+=4;
   } else {
     p++;
   }
@@ -1088,14 +1099,14 @@ BINN_PRIVATE BOOL IsValidBinnHeader(void *pbuf, int *ptype, int *pcount, int *ps
 
 #if 0
   // get the size
-  int32 = *((int *)p); p+=4;
-  size = frombe32(int32);
+  copy_be32((u32*)&size, (u32*)p);
   size &= 0x7FFFFFFF;
+  p+=4;
 
   // get the count
-  int32 = *((int *)p); p+=4;
-  count = frombe32(int32);
+  copy_be32((u32*)&count, (u32*)p);
   count &= 0x7FFFFFFF;
+  p+=4;
 #endif
 
   if ((size < MIN_BINN_SIZE) || (count < 0)) return FALSE;
@@ -1346,23 +1357,20 @@ BINN_PRIVATE BOOL GetValue(unsigned char *p, binn *value) {
     value->ptr = p;   //value->ptr = &value->vuint8;
     break;
   case BINN_STORAGE_WORD:
-    value->vint16 = *((short *) p);
-    value->vint16 = frombe16(value->vint16);
+    copy_be16((u16*)&value->vint16, (u16*)p);
     value->ptr = &value->vint16;
     break;
   case BINN_STORAGE_DWORD:
-    value->vint32 = *((int *) p);
-    value->vint32 = frombe32(value->vint32);
+    copy_be32((u32*)&value->vint32, (u32*)p);
     value->ptr = &value->vint32;
     break;
   case BINN_STORAGE_QWORD:
-    value->vint64 = *((uint64 *) p);
-    value->vint64 = frombe64(value->vint64);
+    copy_be64((u64*)&value->vint64, (u64*)p);
     value->ptr = &value->vint64;
     break;
   case BINN_STORAGE_BLOB:
-    value->size = *((int*)p); p+=4;
-    value->size = frombe32(value->size);
+    copy_be32((u32*)&value->size, (u32*)p);
+    p+=4;
     value->ptr = p;
     break;
   case BINN_STORAGE_CONTAINER:
@@ -1372,9 +1380,9 @@ BINN_PRIVATE BOOL GetValue(unsigned char *p, binn *value) {
   case BINN_STORAGE_STRING:
     DataSize = *((unsigned char*)p);
     if (DataSize & 0x80) {
-      DataSize = *((int*)p); p+=4;
-      DataSize = frombe32(DataSize);
+      copy_be32((u32*)&DataSize, (u32*)p);
       DataSize &= 0x7FFFFFFF;
+      p+=4;
     } else {
       p++;
     }
@@ -1554,8 +1562,8 @@ BINN_PRIVATE BOOL binn_read_pair(int expected_type, void *ptr, int pos, int *pid
   for (i = 0; i < count; i++) {
     switch (type) {
       case BINN_MAP:
-        int32 = *((int*)p); p += 4;
-        int32 = frombe32(int32);
+        copy_be32((u32*)&int32, (u32*)p);
+        p += 4;
         if (p > plimit) return FALSE;
         id = int32;
         break;
@@ -1737,8 +1745,8 @@ BINN_PRIVATE BOOL binn_read_next_pair(int expected_type, binn_iter *iter, int *p
 
   switch (expected_type) {
     case BINN_MAP:
-      int32 = *((int*)p); p += 4;
-      int32 = frombe32(int32);
+      copy_be32((u32*)&int32, (u32*)p);
+      p += 4;
       if (p > iter->plimit) return FALSE;
       id = int32;
       if (pid) *pid = id;

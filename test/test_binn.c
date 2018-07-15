@@ -18,91 +18,95 @@ extern void  (*free_fn)(void *ptr);
 
 /*************************************************************************************/
 
-unsigned short tobe16(unsigned short input);
-unsigned int   tobe32(unsigned int input);
-uint64         tobe64(uint64 input);
+typedef unsigned short int     u16;
+typedef unsigned int           u32;
+typedef unsigned long long int u64;
+
+BINN_PRIVATE void copy_be16(u16 *pdest, u16 *psource);
+BINN_PRIVATE void copy_be32(u32 *pdest, u32 *psource);
+BINN_PRIVATE void copy_be64(u64 *pdest, u64 *psource);
 
 void test_endianess() {
-  unsigned short vshort1, vshort2;
-  unsigned int   vint1, vint2;
-  uint64 value1, value2;
+  u16 vshort1, vshort2, vshort3;
+  u32 vint1, vint2, vint3;
+  u64 value1, value2, value3;
 
   printf("testing endianess... ");
 
   /* tobe16 */
   vshort1 = 0x1122;
-  vshort2 = tobe16(vshort1);
+  copy_be16(&vshort2, &vshort1);
 #if __BYTE_ORDER == __LITTLE_ENDIAN
   assert(vshort2 == 0x2211);
 #else
   assert(vshort2 == 0x1122);
 #endif
-  vshort2 = tobe16(vshort2);
-  assert(vshort2 == vshort1);
+  copy_be16(&vshort3, &vshort2);
+  assert(vshort3 == vshort1);
 
   vshort1 = 0xF123;
-  vshort2 = tobe16(vshort1);
+  copy_be16(&vshort2, &vshort1);
 #if __BYTE_ORDER == __LITTLE_ENDIAN
   assert(vshort2 == 0x23F1);
 #else
   assert(vshort2 == 0xF123);
 #endif
-  vshort2 = tobe16(vshort2);
-  assert(vshort2 == vshort1);
+  copy_be16(&vshort3, &vshort2);
+  assert(vshort3 == vshort1);
 
   vshort1 = 0x0123;
-  vshort2 = tobe16(vshort1);
+  copy_be16(&vshort2, &vshort1);
 #if __BYTE_ORDER == __LITTLE_ENDIAN
   assert(vshort2 == 0x2301);
 #else
   assert(vshort2 == 0x0123);
 #endif
-  vshort2 = tobe16(vshort2);
-  assert(vshort2 == vshort1);
+  copy_be16(&vshort3, &vshort2);
+  assert(vshort3 == vshort1);
 
   /* tobe32 */
   vint1 = 0x11223344;
-  vint2 = tobe32(vint1);
+  copy_be32(&vint2, &vint1);
 #if __BYTE_ORDER == __LITTLE_ENDIAN
   assert(vint2 == 0x44332211);
 #else
   assert(vint2 == 0x11223344);
 #endif
-  vint2 = tobe32(vint2);
-  assert(vint2 == vint1);
+  copy_be32(&vint3, &vint2);
+  assert(vint3 == vint1);
 
   vint1 = 0xF1234580;
-  vint2 = tobe32(vint1);
+  copy_be32(&vint2, &vint1);
 #if __BYTE_ORDER == __LITTLE_ENDIAN
   assert(vint2 == 0x804523F1);
 #else
   assert(vint2 == 0xF1234580);
 #endif
-  vint2 = tobe32(vint2);
-  assert(vint2 == vint1);
+  copy_be32(&vint3, &vint2);
+  assert(vint3 == vint1);
 
   vint1 = 0x00112233;
-  vint2 = tobe32(vint1);
+  copy_be32(&vint2, &vint1);
 #if __BYTE_ORDER == __LITTLE_ENDIAN
   assert(vint2 == 0x33221100);
 #else
   assert(vint2 == 0x00112233);
 #endif
-  vint2 = tobe32(vint2);
-  assert(vint2 == vint1);
+  copy_be32(&vint3, &vint2);
+  assert(vint3 == vint1);
 
   /* tobe64 */
   value1 = 0x1122334455667788;
-  value2 = tobe64(value1);
-  printf("v1: %llx\n", value1);
-  printf("v2: %llx\n", value2);
+  copy_be64(&value2, &value1);
+  //printf("v1: %llx\n", value1);
+  //printf("v2: %llx\n", value2);
 #if __BYTE_ORDER == __LITTLE_ENDIAN
   assert(value2 == 0x8877665544332211);
 #else
   assert(value2 == 0x1122334455667788);
 #endif
-  value2 = tobe64(value2);
-  assert(value2 == value1);
+  copy_be64(&value3, &value2);
+  assert(value3 == value1);
 
   printf("OK\n");
 
