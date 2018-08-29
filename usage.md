@@ -183,17 +183,15 @@ binn_object_foreach(obj, key, value) {
 
 ---
 
-### Containers inside containers
+## Nested Structures
 
 We can put containers inside others (a list inside of an object, a list of objects, a list of maps...)
 
-#### Example 1
-
-A list inside of an object
+### Example 1: A list inside of an object
 
 > {id: 123, name: "John", values: [2.5, 7.35, 9.15]}
 
-##### Writing
+#### Writing
 
 ```c
 binn *obj, *list;
@@ -220,7 +218,7 @@ send(sock, binn_ptr(obj), binn_size(obj));
 binn_free(obj);
 ```
 
-##### Reading
+#### Reading
 
 ```c
 int id, i, count;
@@ -238,13 +236,11 @@ for(i=1; i<=count; i++) {
 }
 ```
 
-#### Example 2
-
-A list of objects
+### Example 2: A list of objects
 
 > [ {name: "John", email: "john@gmail.com"} , {name: "Eric", email: "eric@gmail.com"} ]
 
-##### Writing
+#### Writing
 
 ```c
 binn *list, *obj;
@@ -275,7 +271,7 @@ send(sock, binn_ptr(list), binn_size(list));
 binn_free(list);
 ```
 
-##### Reading
+#### Reading
 
 ```c
 int i, count;
