@@ -284,6 +284,9 @@ BOOL APIENTRY binn_create_list(binn *list);
 BOOL APIENTRY binn_create_map(binn *map);
 BOOL APIENTRY binn_create_object(binn *object);
 
+// create a new binn as a copy from another
+binn * APIENTRY binn_copy(void *old);
+
 
 BOOL APIENTRY binn_list_add_new(binn *list, binn *value);
 BOOL APIENTRY binn_map_set_new(binn *map, int id, binn *value);

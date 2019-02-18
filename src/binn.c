@@ -146,6 +146,8 @@ BINN_PRIVATE void copy_be64(u64 *pdest, u64 *psource) {
 #define strnicmp strncasecmp
 #endif
 
+BINN_PRIVATE BOOL IsValidBinnHeader(void *pbuf, int *ptype, int *pcount, int *psize, int *pheadersize);
+
 /***************************************************************************/
 
 void APIENTRY binn_set_alloc_functions(void* (*new_malloc)(size_t), void* (*new_realloc)(void*,size_t), void (*new_free)(void*)) {
@@ -355,6 +357,28 @@ binn * APIENTRY binn_map() {
 
 binn * APIENTRY binn_object() {
   return binn_new(BINN_OBJECT, 0, 0);
+}
+
+/***************************************************************************/
+
+binn * APIENTRY binn_copy(void *old) {
+  int type, count, size, header_size;
+  unsigned char *old_ptr = binn_ptr(old);
+  binn *item;
+
+  size = 0;
+  if (!IsValidBinnHeader(old_ptr, &type, &count, &size, &header_size)) return NULL;
+
+  item = binn_new(type, size - header_size + MAX_BINN_HEADER, NULL);
+  if( item ){
+    unsigned char *dest;
+    dest = ((unsigned char *) item->pbuf) + MAX_BINN_HEADER;
+    memcpy(dest, old_ptr + header_size, size - header_size);
+    item->used_size = MAX_BINN_HEADER + size - header_size;
+    item->count = count;
+  }
+  return item;
+
 }
 
 /*************************************************************************************/

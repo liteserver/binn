@@ -1793,13 +1793,13 @@ void test_virtual_types() {
 /*************************************************************************************/
 
 void test_binn_iter(BOOL use_int_compression) {
-  binn *list=INVALID_BINN, *list2=INVALID_BINN;
-  binn *obj=INVALID_BINN, *map=INVALID_BINN;
-  binn_iter iter;
-  binn value;
-  int  blob_size, id, list2size;
+  binn *list, *map, *obj;
+  binn *list2, *copy=NULL;
+  binn_iter iter, iter2;
+  binn value, value2;
+  int  blob_size, id, id2, list2size;
   void *ptr, *blob_ptr;
-  char key[256];
+  char key[256], key2[256];
 
   blob_ptr = "key\0value\0\0";
   blob_size = 11;
@@ -1869,6 +1869,7 @@ void test_binn_iter(BOOL use_int_compression) {
   assert(binn_map_set_str(map, 55100, "testing...") == TRUE);
   assert(binn_map_set_blob(map, 55110, (char *)blob_ptr, blob_size) == TRUE);
   assert(binn_map_set_list(map, 55120, list2) == TRUE);
+
 
 
   // read list sequentially - using value
@@ -2211,6 +2212,126 @@ void test_binn_iter(BOOL use_int_compression) {
   //assert(iter.current == 13);  // must keep the same position
   //assert(iter.count == 12);
 
+
+  // test binn copy
+
+  copy = binn_copy(list);
+  assert(copy!=NULL);
+  assert(binn_type(copy) == binn_type(list));
+  assert(binn_count(copy) == binn_count(list));
+  assert(binn_size(copy) == binn_size(list));
+  assert(binn_iter_init(&iter, list, BINN_LIST));
+  assert(binn_iter_init(&iter2, copy, BINN_LIST));
+  while( binn_list_next(&iter, &value) ){
+    assert(binn_list_next(&iter2, &value2) == TRUE);
+    assert(value.type == value2.type);
+    //assert(value.vint32 == value.vint32);
+  }
+  assert(binn_list_add_str(copy, "testing...") == TRUE);
+  assert(binn_type(copy) == binn_type(list));
+  assert(binn_count(copy) == binn_count(list)+1);
+  assert(binn_size(copy) > binn_size(list));
+  binn_free(copy);
+
+  copy = binn_copy(map);
+  assert(copy!=NULL);
+  assert(binn_type(copy) == binn_type(map));
+  assert(binn_count(copy) == binn_count(map));
+  assert(binn_size(copy) == binn_size(map));
+  assert(binn_iter_init(&iter, map, BINN_MAP));
+  assert(binn_iter_init(&iter2, copy, BINN_MAP));
+  while( binn_map_next(&iter, &id, &value) ){
+    assert(binn_map_next(&iter2, &id2, &value2) == TRUE);
+    assert(id == id2);
+    assert(value.type == value2.type);
+    //assert(value.vint32 == value.vint32);
+  }
+  assert(binn_map_set_int32(copy, 5600, 123) == TRUE);
+  assert(binn_type(copy) == binn_type(map));
+  assert(binn_count(copy) == binn_count(map)+1);
+  assert(binn_size(copy) > binn_size(map));
+  binn_free(copy);
+
+  copy = binn_copy(obj);
+  assert(copy!=NULL);
+  assert(binn_type(copy) == binn_type(obj));
+  assert(binn_count(copy) == binn_count(obj));
+  assert(binn_size(copy) == binn_size(obj));
+  assert(binn_iter_init(&iter, obj, BINN_OBJECT));
+  assert(binn_iter_init(&iter2, copy, BINN_OBJECT));
+  while( binn_object_next(&iter, key, &value) ){
+    assert(binn_object_next(&iter2, key2, &value2) == TRUE);
+    assert(strcmp(key,key2)==0);
+    assert(value.type == value2.type);
+    //assert(value.vint32 == value.vint32);
+  }
+  assert(binn_object_set_int32(copy, "another", 123) == TRUE);
+  assert(binn_type(copy) == binn_type(obj));
+  assert(binn_count(copy) == binn_count(obj)+1);
+  assert(binn_size(copy) > binn_size(obj));
+  binn_free(copy);
+
+
+  // test binn copy reading from buffer
+
+  ptr = binn_ptr(list);
+  copy = binn_copy(ptr);
+  assert(copy!=NULL);
+  assert(binn_type(copy) == binn_type(list));
+  assert(binn_count(copy) == binn_count(list));
+  assert(binn_size(copy) == binn_size(list));
+  assert(binn_iter_init(&iter, ptr, BINN_LIST));
+  assert(binn_iter_init(&iter2, copy, BINN_LIST));
+  while( binn_list_next(&iter, &value) ){
+    assert(binn_list_next(&iter2, &value2) == TRUE);
+    assert(value.type == value2.type);
+    //assert(value.vint32 == value.vint32);
+  }
+  assert(binn_list_add_str(copy, "testing...") == TRUE);
+  assert(binn_type(copy) == binn_type(list));
+  assert(binn_count(copy) == binn_count(list)+1);
+  assert(binn_size(copy) > binn_size(list));
+  binn_free(copy);
+
+  ptr = binn_ptr(map);
+  copy = binn_copy(ptr);
+  assert(copy!=NULL);
+  assert(binn_type(copy) == binn_type(map));
+  assert(binn_count(copy) == binn_count(map));
+  assert(binn_size(copy) == binn_size(map));
+  assert(binn_iter_init(&iter, ptr, BINN_MAP));
+  assert(binn_iter_init(&iter2, copy, BINN_MAP));
+  while( binn_map_next(&iter, &id, &value) ){
+    assert(binn_map_next(&iter2, &id2, &value2) == TRUE);
+    assert(id == id2);
+    assert(value.type == value2.type);
+    //assert(value.vint32 == value.vint32);
+  }
+  assert(binn_map_set_int32(copy, 5600, 123) == TRUE);
+  assert(binn_type(copy) == binn_type(map));
+  assert(binn_count(copy) == binn_count(map)+1);
+  assert(binn_size(copy) > binn_size(map));
+  binn_free(copy);
+
+  ptr = binn_ptr(obj);
+  copy = binn_copy(ptr);
+  assert(copy!=NULL);
+  assert(binn_type(copy) == binn_type(obj));
+  assert(binn_count(copy) == binn_count(obj));
+  assert(binn_size(copy) == binn_size(obj));
+  assert(binn_iter_init(&iter, ptr, BINN_OBJECT));
+  assert(binn_iter_init(&iter2, copy, BINN_OBJECT));
+  while( binn_object_next(&iter, key, &value) ){
+    assert(binn_object_next(&iter2, key2, &value2) == TRUE);
+    assert(strcmp(key,key2)==0);
+    assert(value.type == value2.type);
+    //assert(value.vint32 == value.vint32);
+  }
+  assert(binn_object_set_int32(copy, "another", 123) == TRUE);
+  assert(binn_type(copy) == binn_type(obj));
+  assert(binn_count(copy) == binn_count(obj)+1);
+  assert(binn_size(copy) > binn_size(obj));
+  binn_free(copy);
 
 
   binn_free(list);
