@@ -1,10 +1,10 @@
 ifeq ($(OS),Windows_NT)
     TARGET = binn-1.0.dll
 else ifeq ($(PLATFORM),iPhoneOS)
-    TARGET = libbinn.so
+    TARGET = libbinn.dylib
     CFLAGS += -fPIC
 else ifeq ($(PLATFORM),iPhoneSimulator)
-    TARGET = libbinn.so
+    TARGET = libbinn.dylib
     CFLAGS += -fPIC
 else
     UNAME_S := $(shell uname -s)
@@ -35,10 +35,10 @@ libbinn.so.1.0: binn.o
 
 libbinn.1.dylib: binn.o
 	$(CC) -dynamiclib -install_name "$@" -current_version 1.0.0 -compatibility_version 1.0 -o $@ $^
-	#$(STRIP) $(TARGET)
+	$(STRIP) -x $(TARGET)
 
-libbinn.so: binn.o
-	$(CC) -shared -o $@ $^ $(LDFLAGS)
+libbinn.dylib: binn.o
+	$(CC) -dynamiclib -o $@ $^ $(LDFLAGS)
 	$(STRIP) -x $(TARGET)
 
 binn-1.0.dll: binn.o dllmain.o
