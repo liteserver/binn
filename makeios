@@ -52,7 +52,8 @@ buildit()
     #make install
 
     mkdir -p $pwd/output/$target
-    cp libbinn.dylib $pwd/output/$target
+    mv libbinn.a $pwd/output/$target
+    mv libbinn.dylib $pwd/output/$target
 }
 
 findLatestSDKVersion iPhoneOS
@@ -65,6 +66,7 @@ buildit i386 iPhoneSimulator
 buildit x86_64 iPhoneSimulator
 
 LIPO=$(xcrun -sdk iphoneos -find lipo)
+$LIPO -create $pwd/output/armv7/libbinn.a  $pwd/output/armv7s/libbinn.a $pwd/output/arm64/libbinn.a $pwd/output/x86_64/libbinn.a $pwd/output/i386/libbinn.a -output libbinn.a
 $LIPO -create $pwd/output/armv7/libbinn.dylib  $pwd/output/armv7s/libbinn.dylib $pwd/output/arm64/libbinn.dylib $pwd/output/x86_64/libbinn.dylib $pwd/output/i386/libbinn.dylib -output libbinn.dylib
 
 install_name_tool -id @rpath/libbinn.dylib libbinn.dylib

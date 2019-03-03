@@ -1,10 +1,10 @@
 ifeq ($(OS),Windows_NT)
     TARGET = binn-1.0.dll
 else ifeq ($(PLATFORM),iPhoneOS)
-    TARGET = libbinn.dylib
+    TARGET = ios
     CFLAGS += -fPIC
 else ifeq ($(PLATFORM),iPhoneSimulator)
-    TARGET = libbinn.dylib
+    TARGET = ios
     CFLAGS += -fPIC
 else
     UNAME_S := $(shell uname -s)
@@ -29,21 +29,26 @@ STRIP  = strip
 
 all: $(TARGET)
 
+ios: libbinn.a libbinn.dylib
+
 libbinn.so.1.0: binn.o
 	$(CC) -shared -Wl,-soname,$(LINK1) -o $@ $^
-	$(STRIP) $(TARGET)
+	$(STRIP) $@
 
 libbinn.1.dylib: binn.o
 	$(CC) -dynamiclib -install_name "$@" -current_version 1.0.0 -compatibility_version 1.0 -o $@ $^
-	$(STRIP) -x $(TARGET)
+	$(STRIP) -x $@
+
+libbinn.a: binn.o
+	$(AR) rcs $@ $^
 
 libbinn.dylib: binn.o
 	$(CC) -dynamiclib -o $@ $^ $(LDFLAGS)
-	$(STRIP) -x $(TARGET)
+	$(STRIP) -x $@
 
 binn-1.0.dll: binn.o dllmain.o
 	$(CC) -shared -Wl,--out-implib,binn-1.0.lib -o $@ $^
-	$(STRIP) $(TARGET)
+	$(STRIP) $@
 
 binn.o: src/binn.c src/binn.h
 	$(CC) -Wall $(CFLAGS) -c $<
@@ -66,7 +71,7 @@ else
 endif
 
 clean:
-	rm -f *.o $(TARGET)
+	rm -f *.o $(TARGET) libbinn.a libbinn.dylib
 
 uninstall:
 	rm -f /usr/lib/$(LINK1) /usr/lib/$(LINK2) /usr/lib/$(TARGET) /usr/include/binn.h
