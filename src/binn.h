@@ -94,7 +94,7 @@ typedef int BOOL;
 #define BINN_STORAGE_BLOB      0xC0
 #define BINN_STORAGE_CONTAINER 0xE0
 #define BINN_STORAGE_VIRTUAL   0x80000
-//--
+
 #define BINN_STORAGE_MIN       BINN_STORAGE_NOBYTES
 #define BINN_STORAGE_MAX       BINN_STORAGE_CONTAINER
 
@@ -105,7 +105,7 @@ typedef int BOOL;
 #define BINN_TYPE_MASK16       0x0FFF
 
 #define BINN_MAX_VALUE_MASK    0xFFFFF
-//++
+
 
 // Data Formats  ------------------------------------------
 
@@ -180,9 +180,6 @@ typedef int BOOL;
 #define BINN_BMP       0xD004
 
 
-
-//--
-
 // type families
 #define BINN_FAMILY_NONE   0x00
 #define BINN_FAMILY_NULL   0xf1
@@ -196,8 +193,6 @@ typedef int BOOL;
 // integer types related to signal
 #define BINN_SIGNED_INT     11
 #define BINN_UNSIGNED_INT   22
-
-//++
 
 
 typedef void (*binn_mem_free)(void*);
