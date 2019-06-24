@@ -73,7 +73,7 @@ BINN_PRIVATE void copy_be16(u16 *pdest, u16 *psource) {
   dest[1] = source[0];
 #else // if BYTE_ORDER == BIG_ENDIAN
 #ifdef BINN_ONLY_ALIGNED_ACCESS
-  if (psource % 2 == 0){  // address aligned to 16 bit
+  if ((uintptr_t)psource % 2 == 0){  // address aligned to 16 bit
     *pdest = *psource;
   } else {
     unsigned char *source = (unsigned char *) psource;
@@ -97,7 +97,7 @@ BINN_PRIVATE void copy_be32(u32 *pdest, u32 *psource) {
   dest[3] = source[0];
 #else // if BYTE_ORDER == BIG_ENDIAN
 #ifdef BINN_ONLY_ALIGNED_ACCESS
-  if (psource % 4 == 0){  // address aligned to 32 bit
+  if ((uintptr_t)psource % 4 == 0){  // address aligned to 32 bit
     *pdest = *psource;
   } else {
     unsigned char *source = (unsigned char *) psource;
@@ -123,7 +123,7 @@ BINN_PRIVATE void copy_be64(u64 *pdest, u64 *psource) {
   }
 #else // if BYTE_ORDER == BIG_ENDIAN
 #ifdef BINN_ONLY_ALIGNED_ACCESS
-  if (psource % 8 == 0){  // address aligned to 64 bit
+  if ((uintptr_t)psource % 8 == 0){  // address aligned to 64 bit
     *pdest = *psource;
   } else {
     unsigned char *source = (unsigned char *) psource;
