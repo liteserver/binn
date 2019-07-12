@@ -727,7 +727,7 @@ BINN_PRIVATE BOOL binn_map_set_raw(binn *item, int id, int type, void *pvalue, i
 
 BINN_PRIVATE void * compress_int(int *pstorage_type, int *ptype, void *psource) {
   int storage_type, storage_type2, type, type2=0;
-  int64  vint;
+  int64  vint = 0;
   uint64 vuint;
   char *pvalue;
 #if BYTE_ORDER == BIG_ENDIAN
@@ -1568,8 +1568,8 @@ BOOL APIENTRY binn_list_get_value(void* ptr, int pos, binn *value) {
 
 BINN_PRIVATE BOOL binn_read_pair(int expected_type, void *ptr, int pos, int *pid, char *pkey, binn *value) {
   int  type, count, size=0, header_size;
-  int  i, int32, id, counter=0;
-  unsigned char *p, *plimit, *base, *key, len;
+  int  i, int32, id = 0, counter=0;
+  unsigned char *p, *plimit, *base, *key = NULL, len = 0;
 
   ptr = binn_ptr(ptr);
 
@@ -2154,7 +2154,7 @@ BINN_PRIVATE BOOL copy_raw_value(void *psource, void *pdest, int data_store) {
 /*************************************************************************************/
 
 BINN_PRIVATE BOOL copy_int_value(void *psource, void *pdest, int source_type, int dest_type) {
-  uint64 vuint64; int64 vint64;
+  uint64 vuint64 = 0; int64 vint64 = 0;
 
   switch (source_type) {
   case BINN_INT8:
