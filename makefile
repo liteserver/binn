@@ -21,6 +21,7 @@ else
 endif
 
 SHORT  = binn
+PREFIX = /usr/local
 
 CC     = gcc
 STRIP  = strip
@@ -60,21 +61,25 @@ install:
 ifeq ($(OS),Windows_NT)
 	$(error install not supported on Windows)
 else ifeq ($(OS),OSX)
-	cp $(TARGET) /usr/local/lib
-	cd /usr/local/lib && ln -sf $(TARGET) $(LINK1)
-	cp src/binn.h /usr/local/include
+	mkdir -p ${PREFIX}/lib
+	mkdir -p ${PREFIX}/include
+	install -m644 $(TARGET) ${PREFIX}/lib
+	install -m644 src/binn.h ${PREFIX}/include
+	cd ${PREFIX}/lib && ln -sf $(TARGET) $(LINK1)
 else
-	cp $(TARGET) /usr/lib
-	cd /usr/lib && ln -sf $(TARGET) $(LINK1)
-	cd /usr/lib && ln -sf $(TARGET) $(LINK2)
-	cp src/binn.h /usr/include
+	mkdir -p ${PREFIX}/lib
+	mkdir -p ${PREFIX}/include
+	install -m644 $(TARGET) ${PREFIX}/lib
+	install -m644 src/binn.h ${PREFIX}/include
+	cd ${PREFIX}/lib && ln -sf $(TARGET) $(LINK1)
+	cd ${PREFIX}/lib && ln -sf $(TARGET) $(LINK2)
 endif
 
 clean:
 	rm -f *.o $(TARGET) libbinn.a libbinn.dylib
 
 uninstall:
-	rm -f /usr/lib/$(LINK1) /usr/lib/$(LINK2) /usr/lib/$(TARGET) /usr/include/binn.h
+	rm -f ${PREFIX}/lib/$(LINK1) ${PREFIX}/lib/$(LINK2) ${PREFIX}/lib/$(TARGET) ${PREFIX}/include/binn.h
 
 test: test/test_binn.c test/test_binn2.c src/binn.c
 	$(CC) -g -Wall -DDEBUG -o test/test_binn $^
