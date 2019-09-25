@@ -169,6 +169,8 @@ For *strings*, the size parameter does not include the null terminator.
 
 For *containers*, the size parameter includes the type parameter. It stores the size of the whole structure.
 
+> **Note:** on versions prior to 2.0 the blobs sizes are stored only with 4 bytes and without support for 1-byte sizes.
+
 [Count]
 ---------
 This parameter is used only in containers to inform the number of items inside them. It can have 1 or 4 bytes, formatted exactly as the size parameter.
