@@ -531,8 +531,16 @@ BINN_PRIVATE unsigned char * AdvanceDataPos(unsigned char *p, unsigned char *pli
     break;
   case BINN_STORAGE_BLOB:
     if (p + sizeof(int) - 1 > plimit) return 0;
-    copy_be32((u32*)&DataSize, (u32*)p);
-    p += 4 + DataSize;
+    DataSize = *((unsigned char*)p);
+    if (DataSize & 0x80) {
+      if (p + sizeof(int) - 1 > plimit) return 0;
+      copy_be32((u32*)&DataSize, (u32*)p);
+      DataSize &= 0x7FFFFFFF;
+      p+=4;
+    } else {
+      p++;
+    }
+    p += DataSize;
     break;
   case BINN_STORAGE_CONTAINER:
     if (p > plimit) return 0;
@@ -860,7 +868,7 @@ BINN_PRIVATE BOOL AddValue(binn *item, int type, void *pvalue, int size) {
     case BINN_STORAGE_BLOB:
       if (size < 0) return FALSE;
       //if (size == 0) ...
-      ArgSize = size + 4;
+      ArgSize = size + 4; // at least this size
       break;
     case BINN_STORAGE_STRING:
       if (size < 0) return FALSE;
@@ -916,10 +924,18 @@ BINN_PRIVATE BOOL AddValue(binn *item, int type, void *pvalue, int size) {
       item->used_size += 8;
       break;
     case BINN_STORAGE_BLOB:
-      copy_be32((u32*)p, (u32*)&size);
-      p += 4;
+      if (size > 127) {
+        int32 = size | 0x80000000;
+        copy_be32((u32*)p, (u32*)&int32);
+        p += 4;
+        item->used_size += 4;
+      } else {
+        *((unsigned char *) p) = size;
+        p++;
+        item->used_size++;
+      }
       memcpy(p, pvalue, size);
-      item->used_size += 4 + size;
+      item->used_size += size;
       break;
     case BINN_STORAGE_STRING:
       if (size > 127) {
@@ -1393,8 +1409,15 @@ BINN_PRIVATE BOOL GetValue(unsigned char *p, binn *value) {
     value->ptr = &value->vint64;
     break;
   case BINN_STORAGE_BLOB:
-    copy_be32((u32*)&value->size, (u32*)p);
-    p+=4;
+    DataSize = *((unsigned char*)p);
+    if (DataSize & 0x80) {
+      copy_be32((u32*)&DataSize, (u32*)p);
+      DataSize &= 0x7FFFFFFF;
+      p+=4;
+    } else {
+      p++;
+    }
+    value->size = DataSize;
     value->ptr = p;
     break;
   case BINN_STORAGE_CONTAINER:
