@@ -336,6 +336,19 @@ void test_floating_point_numbers() {
 
 /*************************************************************************************/
 
+void print_binn(binn *map) {
+  unsigned char *p;
+  int size, i;
+  p = binn_ptr(map);
+  size = binn_size(map);
+  for(i=0; i<size; i++){
+    printf("%02x ", p[i]);
+  }
+  puts("");
+}
+
+/*************************************************************************************/
+
 void test1() {
   static const int fix_size = 512;
   int i, blobsize;
@@ -529,6 +542,8 @@ void test1() {
 
   // add values - valid -----------------------------------------------------------------
 
+  i = 0x1234;
+
   assert(binn_list_add(list, BINN_INT32, &i, 0) == TRUE);
   assert(binn_map_set(map, 5501, BINN_INT32, &i, 0) == TRUE);
   assert(binn_map_set(map, 5501, BINN_INT32, &i, 0) == FALSE);       // with the same ID
@@ -584,6 +599,43 @@ void test1() {
   assert(binn_list_add(list, BINN_BLOB, ptr, 0) == TRUE);
   assert(binn_list_add(list, BINN_STRING, "", 0) == TRUE);
   assert(binn_list_add(list, BINN_STRING, "after the empty items", 0) == TRUE);
+
+
+  // test different id sizes on maps
+
+  // positive values
+  assert(binn_map_set(map, 0x09, BINN_UINT8, &vbyte, 0) == TRUE);
+  assert(binn_map_set(map, 0x3F, BINN_UINT8, &vbyte, 0) == TRUE);
+  assert(binn_map_set(map, 0x4F, BINN_UINT8, &vbyte, 0) == TRUE);
+  assert(binn_map_set(map, 0xFFF, BINN_UINT8, &vbyte, 0) == TRUE);
+  assert(binn_map_set(map, 0xFFFFF, BINN_UINT8, &vbyte, 0) == TRUE);
+  assert(binn_map_set(map, 0xFFFFFFF, BINN_UINT8, &vbyte, 0) == TRUE);
+  assert(binn_map_set(map, 0x7FFFFFFF, BINN_UINT8, &vbyte, 0) == TRUE);
+  // negative values
+  assert(binn_map_set(map, -0x09, BINN_UINT8, &vbyte, 0) == TRUE);
+  assert(binn_map_set(map, -0x3F, BINN_UINT8, &vbyte, 0) == TRUE);
+  assert(binn_map_set(map, -0x4F, BINN_UINT8, &vbyte, 0) == TRUE);
+  assert(binn_map_set(map, -0xFFF, BINN_UINT8, &vbyte, 0) == TRUE);
+  assert(binn_map_set(map, -0xFFFFF, BINN_UINT8, &vbyte, 0) == TRUE);
+  assert(binn_map_set(map, -0xFFFFFFF, BINN_UINT8, &vbyte, 0) == TRUE);
+  assert(binn_map_set(map, -0x7FFFFFFF, BINN_UINT8, &vbyte, 0) == TRUE);
+
+  // positive values
+  assert(binn_map_set(map, 0x09, BINN_UINT8, &vbyte, 0) == FALSE);
+  assert(binn_map_set(map, 0x3F, BINN_UINT8, &vbyte, 0) == FALSE);
+  assert(binn_map_set(map, 0x4F, BINN_UINT8, &vbyte, 0) == FALSE);
+  assert(binn_map_set(map, 0xFFF, BINN_UINT8, &vbyte, 0) == FALSE);
+  assert(binn_map_set(map, 0xFFFFF, BINN_UINT8, &vbyte, 0) == FALSE);
+  assert(binn_map_set(map, 0xFFFFFFF, BINN_UINT8, &vbyte, 0) == FALSE);
+  assert(binn_map_set(map, 0x7FFFFFFF, BINN_UINT8, &vbyte, 0) == FALSE);
+  // negative values
+  assert(binn_map_set(map, -0x09, BINN_UINT8, &vbyte, 0) == FALSE);
+  assert(binn_map_set(map, -0x3F, BINN_UINT8, &vbyte, 0) == FALSE);
+  assert(binn_map_set(map, -0x4F, BINN_UINT8, &vbyte, 0) == FALSE);
+  assert(binn_map_set(map, -0xFFF, BINN_UINT8, &vbyte, 0) == FALSE);
+  assert(binn_map_set(map, -0xFFFFF, BINN_UINT8, &vbyte, 0) == FALSE);
+  assert(binn_map_set(map, -0xFFFFFFF, BINN_UINT8, &vbyte, 0) == FALSE);
+  assert(binn_map_set(map, -0x7FFFFFFF, BINN_UINT8, &vbyte, 0) == FALSE);
 
 
   // add values to a fixed-size binn (pre-allocated buffer) --------------------------

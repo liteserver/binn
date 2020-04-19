@@ -569,6 +569,71 @@ BINN_PRIVATE unsigned char * AdvanceDataPos(unsigned char *p, unsigned char *pli
 
 /***************************************************************************/
 
+/*
+
+The id can be stored with 1 to 5 bytes
+
+S = signal bit
+X = bit part of id
+
+  0SXX XXXX
+  100S XXXX + 1 byte
+  101S XXXX + 2 bytes
+  110S XXXX + 3 bytes
+  1110 0000 + 4 bytes
+
+*/
+BINN_PRIVATE int read_map_id(unsigned char **pp, unsigned char *plimit) {
+  unsigned char *p, c, sign, type;
+  int id, extra_bytes;
+
+  p = *pp;
+
+  c = *p++;
+
+  if (c & 0x80) {
+    extra_bytes = ((c & 0x60) >> 5) + 1;
+    if (p + extra_bytes > plimit ) {
+      *pp = p + extra_bytes;
+      return 0;
+    }
+  }
+
+  type = c & 0xE0;
+  sign = c & 0x10;
+
+  if ((c & 0x80) == 0) {
+    sign = c & 0x40;
+    id = c & 0x3F;
+  } else if (type == 0x80) {
+    id = c & 0x0F;
+    id = (id << 8) | *p++;
+  } else if (type == 0xA0) {
+    id = c & 0x0F;
+    id = (id << 8) | *p++;
+    id = (id << 8) | *p++;
+  } else if (type == 0xC0) {
+    id = c & 0x0F;
+    id = (id << 8) | *p++;
+    id = (id << 8) | *p++;
+    id = (id << 8) | *p++;
+  } else if (type == 0xE0) {
+    copy_be32((u32*)&id, (u32*)p);
+    p += 4;
+  } else {
+    *pp = plimit + 2;
+    return 0;
+  }
+
+  if (sign) id = -id;
+
+  *pp = p;
+
+  return id;
+}
+
+/***************************************************************************/
+
 BINN_PRIVATE unsigned char * SearchForID(unsigned char *p, int header_size, int size, int numitems, int id) {
   unsigned char *plimit, *base;
   int  i, int32;
@@ -579,8 +644,7 @@ BINN_PRIVATE unsigned char * SearchForID(unsigned char *p, int header_size, int 
 
   // search for the ID in all the arguments.
   for (i = 0; i < numitems; i++) {
-    copy_be32((u32*)&int32, (u32*)p);
-    p += 4;
+    int32 = read_map_id(&p, plimit);
     if (p > plimit) break;
     // Compare if the IDs are equal.
     if (int32 == id) return p;
@@ -694,7 +758,8 @@ BINN_PRIVATE BOOL binn_object_set_raw(binn *item, char *key, int type, void *pva
 /***************************************************************************/
 
 BINN_PRIVATE BOOL binn_map_set_raw(binn *item, int id, int type, void *pvalue, int size) {
-  unsigned char *p;
+  unsigned char *base, *p, sign;
+  int id_size;
 
   if ((item == NULL) || (item->type != BINN_MAP) || (item->writable == FALSE)) return FALSE;
 
@@ -704,14 +769,39 @@ BINN_PRIVATE BOOL binn_map_set_raw(binn *item, int id, int type, void *pvalue, i
 
   // start adding it
 
-  if (CheckAllocation(item, 4) == FALSE) return FALSE;  // 4 bytes used for the id.
+  if (CheckAllocation(item, 5) == FALSE) return FALSE;  // max 5 bytes used for the id.
 
-  p = ((unsigned char *) item->pbuf) + item->used_size;
-  copy_be32((u32*)p, (u32*)&id);
-  item->used_size += 4;
+  p = base = ((unsigned char *) item->pbuf) + item->used_size;
+
+  sign = (id < 0);
+  if (sign) id = -id;
+
+  if (id <= 0x3F) {
+    *p++ = (sign << 6) | id;
+  } else if (id <= 0xFFF) {
+    *p++ = 0x80 | (sign << 4) | ((id & 0xF00) >> 8);
+    *p++ = id & 0xFF;
+  } else if (id <= 0xFFFFF) {
+    *p++ = 0xA0 | (sign << 4) | ((id & 0xF0000) >> 16);
+    *p++ = (id & 0xFF00) >> 8;
+    *p++ = id & 0xFF;
+  } else if (id <= 0xFFFFFFF) {
+    *p++ = 0xC0 | (sign << 4) | ((id & 0xF000000) >> 24);
+    *p++ = (id & 0xFF0000) >> 16;
+    *p++ = (id & 0xFF00) >> 8;
+    *p++ = id & 0xFF;
+  } else {
+    *p++ = 0xE0;
+    if (sign) id = -id;
+    copy_be32((u32*)p, (u32*)&id);
+    p += 4;
+  }
+
+  id_size = (p - base);
+  item->used_size += id_size;
 
   if (AddValue(item, type, pvalue, size) == FALSE) {
-    item->used_size -= 4;
+    item->used_size -= id_size;
     return FALSE;
   }
 
@@ -1301,7 +1391,7 @@ BOOL APIENTRY binn_is_valid_ex(void *ptr, int *ptype, int *pcount, int *psize) {
         break;
       case BINN_MAP:
         // increment the used space
-        p += 4;
+        read_map_id(&p, plimit);
         break;
       //case BINN_LIST:
       //  break;
@@ -1577,8 +1667,7 @@ BINN_PRIVATE BOOL binn_read_pair(int expected_type, void *ptr, int pos, int *pid
   for (i = 0; i < count; i++) {
     switch (type) {
       case BINN_MAP:
-        copy_be32((u32*)&int32, (u32*)p);
-        p += 4;
+        int32 = read_map_id(&p, plimit);
         if (p > plimit) return FALSE;
         id = int32;
         break;
@@ -1760,8 +1849,7 @@ BINN_PRIVATE BOOL binn_read_next_pair(int expected_type, binn_iter *iter, int *p
 
   switch (expected_type) {
     case BINN_MAP:
-      copy_be32((u32*)&int32, (u32*)p);
-      p += 4;
+      int32 = read_map_id(&p, iter->plimit);
       if (p > iter->plimit) return FALSE;
       id = int32;
       if (pid) *pid = id;
