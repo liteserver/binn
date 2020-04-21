@@ -12,15 +12,23 @@
 #define MIN_BINN_SIZE         3  // [1:type][1:size][1:count]
 #define CHUNK_SIZE            256  // 1024
 
+typedef unsigned short int     u16;
+typedef unsigned int           u32;
+typedef unsigned long long int u64;
+
 extern void* (*malloc_fn)(int len);
 extern void* (*realloc_fn)(void *ptr, int len);
 extern void  (*free_fn)(void *ptr);
 
 /*************************************************************************************/
 
-typedef unsigned short int     u16;
-typedef unsigned int           u32;
-typedef unsigned long long int u64;
+void test_binn_version() {
+  char *version = binn_version();
+  assert(version);
+  assert(strcmp(version,"3.0.0")==0);
+}
+
+/*************************************************************************************/
 
 BINN_PRIVATE void copy_be16(u16 *pdest, u16 *psource);
 BINN_PRIVATE void copy_be32(u32 *pdest, u32 *psource);
@@ -1894,6 +1902,8 @@ int main() {
   puts("\nStarting the unit/regression tests...\n");
 
   printf("sizeof(binn) = %d\n\n", sizeof(binn));
+
+  test_binn_version();
 
   test_endianess();
 

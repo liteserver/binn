@@ -11,6 +11,7 @@
 extern "C" {
 #endif
 
+#define BINN_VERSION "3.0.0"  /* using semantic versioning */
 
 #ifndef NULL
 #ifdef __cplusplus
@@ -253,6 +254,7 @@ typedef struct binn_struct binn;
 
 // --- GENERAL FUNCTIONS  ----------------------------------------------------------
 
+char * APIENTRY binn_version();
 
 void   APIENTRY binn_set_alloc_functions(void* (*new_malloc)(size_t), void* (*new_realloc)(void*,size_t), void (*new_free)(void*));
 

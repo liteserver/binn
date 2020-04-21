@@ -150,6 +150,12 @@ BINN_PRIVATE BOOL IsValidBinnHeader(void *pbuf, int *ptype, int *pcount, int *ps
 
 /***************************************************************************/
 
+char * APIENTRY binn_version() {
+  return BINN_VERSION;
+}
+
+/***************************************************************************/
+
 void APIENTRY binn_set_alloc_functions(void* (*new_malloc)(size_t), void* (*new_realloc)(void*,size_t), void (*new_free)(void*)) {
 
   malloc_fn = new_malloc;
