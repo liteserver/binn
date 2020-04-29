@@ -1,14 +1,30 @@
-ifeq ($(OS),Windows_NT)
+ifeq ($(OS_NAME),)
+  ifeq ($(OS),Windows_NT)
+    OS = Windows
+  else ifeq ($(PLATFORM),iPhoneOS)
+    OS = iPhoneOS
+  else ifeq ($(PLATFORM),iPhoneSimulator)
+    OS = iPhoneSimulator
+  else
+    UNAME_S := $(shell uname -s)
+    ifeq ($(UNAME_S),Darwin)
+      OS = Mac
+    else
+      OS = Linux
+    endif
+  endif
+endif
+
+ifeq ($(OS_NAME),Windows)
     TARGET = binn-1.0.dll
-else ifeq ($(PLATFORM),iPhoneOS)
+else ifeq ($(OS_NAME),iPhoneOS)
     TARGET = ios
     CFLAGS += -fPIC
-else ifeq ($(PLATFORM),iPhoneSimulator)
+else ifeq ($(OS_NAME),iPhoneSimulator)
     TARGET = ios
     CFLAGS += -fPIC
 else
-    UNAME_S := $(shell uname -s)
-    ifeq ($(UNAME_S),Darwin)
+    ifeq ($(OS_NAME),Mac)
         OS = OSX
         TARGET = libbinn.1.dylib
         LINK1  = libbinn.dylib
@@ -20,11 +36,17 @@ else
     CFLAGS += -fPIC
 endif
 
-SHORT  = binn
-PREFIX = /usr/local
+SHORT   = binn
+PREFIX := /usr/local
 
-CC     = gcc
-STRIP  = strip
+ifneq ($(HOST),)
+CROSS_PREFIX := $(HOST)-
+else
+CROSS_PREFIX :=
+endif
+
+CC     ?= $(CROSS_PREFIX)gcc
+STRIP  ?= $(CROSS_PREFIX)strip
 
 .PHONY: test
 
@@ -58,9 +80,9 @@ dllmain.o: src/win32/dllmain.c
 	$(CC) -Wall -c $<
 
 install:
-ifeq ($(OS),Windows_NT)
+ifeq ($(OS_NAME),Windows)
 	$(error install not supported on Windows)
-else ifeq ($(OS),OSX)
+else ifeq ($(OS_NAME),Mac)
 	mkdir -p ${PREFIX}/lib
 	mkdir -p ${PREFIX}/include
 	install -m644 $(TARGET) ${PREFIX}/lib
