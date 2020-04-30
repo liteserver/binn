@@ -1,37 +1,38 @@
-ifeq ($(OS_NAME),)
+ifneq ($(OS_NAME),)
+  TARGET_OS = $(OS_NAME)
+else
   ifeq ($(OS),Windows_NT)
-    OS = Windows
+    TARGET_OS = Windows
   else ifeq ($(PLATFORM),iPhoneOS)
-    OS = iPhoneOS
+    TARGET_OS = iPhoneOS
   else ifeq ($(PLATFORM),iPhoneSimulator)
-    OS = iPhoneSimulator
+    TARGET_OS = iPhoneSimulator
   else
     UNAME_S := $(shell uname -s)
     ifeq ($(UNAME_S),Darwin)
-      OS = Mac
+      TARGET_OS = Mac
     else
-      OS = Linux
+      TARGET_OS = Linux
     endif
   endif
 endif
 
-ifeq ($(OS_NAME),Windows)
-    TARGET = binn-3.0.dll
-else ifeq ($(OS_NAME),iPhoneOS)
-    TARGET = ios
+ifeq ($(TARGET_OS),Windows)
+    LIBRARY = binn-3.0.dll
+else ifeq ($(TARGET_OS),iPhoneOS)
+    LIBRARY = ios
     CFLAGS += -fPIC
-else ifeq ($(OS_NAME),iPhoneSimulator)
-    TARGET = ios
+else ifeq ($(TARGET_OS),iPhoneSimulator)
+    LIBRARY = ios
     CFLAGS += -fPIC
 else
-    ifeq ($(OS_NAME),Mac)
-        OS = OSX
-        TARGET = libbinn.3.dylib
-        LINK1  = libbinn.dylib
+    ifeq ($(TARGET_OS),Mac)
+        LIBRARY = libbinn.3.dylib
+        LINK1   = libbinn.dylib
     else
-        TARGET = libbinn.so.3.0
-        LINK1  = libbinn.so.3
-        LINK2  = libbinn.so
+        LIBRARY = libbinn.so.3.0
+        LINK1   = libbinn.so.3
+        LINK2   = libbinn.so
     endif
     CFLAGS += -fPIC
 endif
@@ -50,7 +51,7 @@ STRIP  ?= $(CROSS_PREFIX)strip
 
 .PHONY: test
 
-all: $(TARGET)
+all: $(LIBRARY)
 
 ios: libbinn.a libbinn.dylib
 
@@ -80,28 +81,28 @@ dllmain.o: src/win32/dllmain.c
 	$(CC) -Wall -c $<
 
 install:
-ifeq ($(OS_NAME),Windows)
+ifeq ($(TARGET_OS),Windows)
 	$(error install not supported on Windows)
-else ifeq ($(OS_NAME),Mac)
+else ifeq ($(TARGET_OS),Mac)
 	mkdir -p ${PREFIX}/lib
 	mkdir -p ${PREFIX}/include
-	install -m644 $(TARGET) ${PREFIX}/lib
+	install -m644 $(LIBRARY) ${PREFIX}/lib
 	install -m644 src/binn.h ${PREFIX}/include
-	cd ${PREFIX}/lib && ln -sf $(TARGET) $(LINK1)
+	cd ${PREFIX}/lib && ln -sf $(LIBRARY) $(LINK1)
 else
 	mkdir -p ${PREFIX}/lib
 	mkdir -p ${PREFIX}/include
-	install -m644 $(TARGET) ${PREFIX}/lib
+	install -m644 $(LIBRARY) ${PREFIX}/lib
 	install -m644 src/binn.h ${PREFIX}/include
-	cd ${PREFIX}/lib && ln -sf $(TARGET) $(LINK1)
-	cd ${PREFIX}/lib && ln -sf $(TARGET) $(LINK2)
+	cd ${PREFIX}/lib && ln -sf $(LIBRARY) $(LINK1)
+	cd ${PREFIX}/lib && ln -sf $(LIBRARY) $(LINK2)
 endif
 
 clean:
-	rm -f *.o $(TARGET) libbinn.a libbinn.dylib
+	rm -f *.o $(LIBRARY) libbinn.a libbinn.dylib
 
 uninstall:
-	rm -f ${PREFIX}/lib/$(LINK1) ${PREFIX}/lib/$(LINK2) ${PREFIX}/lib/$(TARGET) ${PREFIX}/include/binn.h
+	rm -f ${PREFIX}/lib/$(LINK1) ${PREFIX}/lib/$(LINK2) ${PREFIX}/lib/$(LIBRARY) ${PREFIX}/include/binn.h
 
 test: test/test_binn.c test/test_binn2.c src/binn.c
 	$(CC) -g -Wall -DDEBUG -o test/test_binn $^
