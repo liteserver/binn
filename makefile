@@ -16,7 +16,7 @@ ifeq ($(OS_NAME),)
 endif
 
 ifeq ($(OS_NAME),Windows)
-    TARGET = binn-1.0.dll
+    TARGET = binn-3.0.dll
 else ifeq ($(OS_NAME),iPhoneOS)
     TARGET = ios
     CFLAGS += -fPIC
@@ -26,11 +26,11 @@ else ifeq ($(OS_NAME),iPhoneSimulator)
 else
     ifeq ($(OS_NAME),Mac)
         OS = OSX
-        TARGET = libbinn.1.dylib
+        TARGET = libbinn.3.dylib
         LINK1  = libbinn.dylib
     else
-        TARGET = libbinn.so.1.0
-        LINK1  = libbinn.so.1
+        TARGET = libbinn.so.3.0
+        LINK1  = libbinn.so.3
         LINK2  = libbinn.so
     endif
     CFLAGS += -fPIC
@@ -54,12 +54,12 @@ all: $(TARGET)
 
 ios: libbinn.a libbinn.dylib
 
-libbinn.so.1.0: binn.o
+libbinn.so.3.0: binn.o
 	$(CC) -shared -Wl,-soname,$(LINK1) -o $@ $^
 	$(STRIP) $@
 
-libbinn.1.dylib: binn.o
-	$(CC) -dynamiclib -install_name "$@" -current_version 1.0.0 -compatibility_version 1.0 -o $@ $^
+libbinn.3.dylib: binn.o
+	$(CC) -dynamiclib -install_name "$@" -current_version 3.0.0 -compatibility_version 3.0 -o $@ $^
 	$(STRIP) -x $@
 
 libbinn.a: binn.o
@@ -69,8 +69,8 @@ libbinn.dylib: binn.o
 	$(CC) -dynamiclib -o $@ $^ $(LDFLAGS)
 	$(STRIP) -x $@
 
-binn-1.0.dll: binn.o dllmain.o
-	$(CC) -shared -Wl,--out-implib,binn-1.0.lib -o $@ $^
+binn-3.0.dll: binn.o dllmain.o
+	$(CC) -shared -Wl,--out-implib,binn-3.0.lib -o $@ $^
 	$(STRIP) $@
 
 binn.o: src/binn.c src/binn.h
