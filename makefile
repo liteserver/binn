@@ -53,6 +53,8 @@ STRIP  ?= $(CROSS_PREFIX)strip
 
 all: $(LIBRARY)
 
+static: libbinn.a
+
 ios: libbinn.a libbinn.dylib
 
 libbinn.so.3.0: binn.o
