@@ -1,40 +1,40 @@
 ifneq ($(OS_NAME),)
-  TARGET_OS = $(OS_NAME)
+	TARGET_OS = $(OS_NAME)
 else
-  ifeq ($(OS),Windows_NT)
-    TARGET_OS = Windows
-  else ifeq ($(PLATFORM),iPhoneOS)
-    TARGET_OS = iPhoneOS
-  else ifeq ($(PLATFORM),iPhoneSimulator)
-    TARGET_OS = iPhoneSimulator
-  else
-    UNAME_S := $(shell uname -s)
-    ifeq ($(UNAME_S),Darwin)
-      TARGET_OS = Mac
-    else
-      TARGET_OS = Linux
-    endif
-  endif
+	ifeq ($(OS),Windows_NT)
+		TARGET_OS = Windows
+	else ifeq ($(PLATFORM),iPhoneOS)
+		TARGET_OS = iPhoneOS
+	else ifeq ($(PLATFORM),iPhoneSimulator)
+		TARGET_OS = iPhoneSimulator
+	else
+		UNAME_S := $(shell uname -s)
+		ifeq ($(UNAME_S),Darwin)
+			TARGET_OS = Mac
+		else
+			TARGET_OS = Linux
+		endif
+	endif
 endif
 
 ifeq ($(TARGET_OS),Windows)
-    LIBRARY = binn-3.0.dll
+	LIBRARY = binn-3.0.dll
 else ifeq ($(TARGET_OS),iPhoneOS)
-    LIBRARY = ios
-    CFLAGS += -fPIC
+	LIBRARY = ios
+	CFLAGS += -fPIC
 else ifeq ($(TARGET_OS),iPhoneSimulator)
-    LIBRARY = ios
-    CFLAGS += -fPIC
+	LIBRARY = ios
+	CFLAGS += -fPIC
 else
-    ifeq ($(TARGET_OS),Mac)
-        LIBRARY = libbinn.3.dylib
-        LINK1   = libbinn.dylib
-    else
-        LIBRARY = libbinn.so.3.0
-        LINK1   = libbinn.so.3
-        LINK2   = libbinn.so
-    endif
-    CFLAGS += -fPIC
+	ifeq ($(TARGET_OS),Mac)
+		LIBRARY = libbinn.3.dylib
+		LINK1   = libbinn.dylib
+	else
+		LIBRARY = libbinn.so.3.0
+		LINK1   = libbinn.so.3
+		LINK2   = libbinn.so
+	endif
+	CFLAGS += -fPIC
 endif
 
 SHORT   = binn
@@ -42,8 +42,6 @@ PREFIX := /usr/local
 
 ifneq ($(HOST),)
 CROSS_PREFIX := $(HOST)-
-else
-CROSS_PREFIX :=
 endif
 
 CC     ?= $(CROSS_PREFIX)gcc

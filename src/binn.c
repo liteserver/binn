@@ -141,7 +141,7 @@ BINN_PRIVATE void copy_be64(u64 *pdest, u64 *psource) {
 
 /***************************************************************************/
 
-#ifndef WIN32
+#ifndef _MSC_VER
 #define stricmp strcasecmp
 #define strnicmp strncasecmp
 #endif
