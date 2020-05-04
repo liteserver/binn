@@ -3418,7 +3418,7 @@ char * APIENTRY binn_get_str(binn *value) {
 
   if (type_family(value->type) == BINN_FAMILY_INT) {
     if (copy_int_value(value->ptr, &vint, value->type, BINN_INT64) == FALSE) return NULL;
-    sprintf(buf, "%" INT64_FORMAT, vint);
+    snprintf(buf, sizeof buf, "%" INT64_FORMAT, vint);
     goto loc_convert_value;
   }
 
@@ -3426,7 +3426,7 @@ char * APIENTRY binn_get_str(binn *value) {
   case BINN_FLOAT:
     value->vdouble = value->vfloat;
   case BINN_DOUBLE:
-    sprintf(buf, "%g", value->vdouble);
+    snprintf(buf, sizeof buf, "%g", value->vdouble);
     goto loc_convert_value;
   case BINN_STRING:
     return (char*) value->ptr;
