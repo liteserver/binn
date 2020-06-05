@@ -20,10 +20,10 @@ endif
 ifeq ($(TARGET_OS),Windows)
 	LIBRARY = binn-3.0.dll
 else ifeq ($(TARGET_OS),iPhoneOS)
-	LIBRARY = ios
+	LIBRARY = libbinn.dylib
 	CFLAGS += -fPIC
 else ifeq ($(TARGET_OS),iPhoneSimulator)
-	LIBRARY = ios
+	LIBRARY = libbinn.dylib
 	CFLAGS += -fPIC
 else
 	ifeq ($(TARGET_OS),Mac)

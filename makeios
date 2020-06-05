@@ -48,7 +48,7 @@ buildit()
     export LDFLAGS="-arch ${target} -isysroot $PLATFORMPATH/$platform.platform/Developer/SDKs/$platform$SDKVERSION.sdk"
 
     make clean
-    make
+    make ios
     #make install
 
     mkdir -p $pwd/ios/$target
@@ -75,4 +75,5 @@ mv libbinn.a $pwd/ios/
 mv libbinn.dylib $pwd/ios/
 make clean
 
-echo "done."
+echo ""
+echo "done. files in the ios folder"
