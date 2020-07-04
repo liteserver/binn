@@ -1,5 +1,5 @@
 #include "../../src/binn.h"
-#include "../../../jansson-2.3/jansson.h"
+#include "jansson.h"
 
 char * APIENTRY binn_to_javascript(void *binn);
 

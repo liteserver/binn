@@ -11,6 +11,23 @@
 
 /*************************************************************************************/
 
+static const char hexdigits[] = {
+  '0', '1', '2', '3', '4', '5', '6', '7',
+  '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'
+};
+
+void to_hex(char *source, int size, char *dest){
+  char *end = source + size;
+  for(; source<end; source++){
+    unsigned char c = *source;
+    *(dest++) = hexdigits[(c>>4)&0xf];
+    *(dest++) = hexdigits[c&0xf];
+  }
+  *dest = 0;
+}
+
+/*************************************************************************************/
+
 binn * APIENTRY json_obj_to_binn(json_t *base) {
   size_t  i, count;
   json_t  *value;
@@ -65,7 +82,7 @@ BINN_PRIVATE json_t * binn_to_json_obj2(binn *base) {
   json_int_t intvalue;
   binn_iter  iter;
   binn   binn_value={0};
-  int    id;
+  int    id, size;
   char   key[256], *ptr;
   double floatvalue;
 
@@ -85,9 +102,14 @@ BINN_PRIVATE json_t * binn_to_json_obj2(binn *base) {
     value = json_string((char *)base->ptr);
     break;
 
-  //case BINN_BLOB:
-  //  value = json_string((char *)base->ptr);
-  //  break;
+  case BINN_BLOB:
+    size = (base->size * 2) + 1;
+    ptr = malloc(size);
+    if (!ptr) return NULL;
+    to_hex(base->ptr, base->size, ptr);
+    value = json_string(ptr);
+    free(ptr);
+    break;
 
   case BINN_INT8:
     intvalue = base->vint8;
