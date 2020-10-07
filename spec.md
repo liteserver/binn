@@ -152,7 +152,7 @@ The created type parameter must be stored as big-endian.
 
 [Size]
 -------
-This parameter is used in strings, blobs and containters. It can have 1 or 4 bytes.
+This parameter is used in strings, blobs and containers. It can have 1 or 4 bytes.
 
 If the first bit of size is 0, it uses only 1 byte. So when the data size is up to 127 (0x7F) bytes the size parameter will use only 1 byte.
 
