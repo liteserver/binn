@@ -127,7 +127,8 @@ How to use
 ----------
 
  1. Including the binn.c file in your project; or
- 2. Linking to the binn library:
+ 2. Including the static library in your project; or
+ 3. Linking to the binn library:
 
 ### On Linux and MacOSX:
 ```
@@ -153,6 +154,7 @@ cd binn
 make
 sudo make install
 ```
+
 It will create the file `libbinn.so.3.0` on Linux and `libbinn.3.dylib` on MacOSX
 
 
@@ -165,7 +167,19 @@ git clone https://github.com/liteserver/binn
 cd binn
 make
 ```
+
 Both will create the file `binn-3.0.dll`
+
+
+### Static library
+
+To generate a static library:
+
+```
+make static
+```
+
+It will create the file `libbinn.a`
 
 
 ### On Android:
