@@ -110,7 +110,7 @@ total = binn_object_double(obj, "total");
 You can find more usage examples [here](usage.md) and in the [examples folder](examples)
 
 
-## Wrappers
+## Other Implementations
 
  * Javascript: [liteserver/binn.js](https://github.com/liteserver/binn.js)
  * PHP: [ET-NiK/binn-php](https://github.com/ET-NiK/binn-php)
@@ -135,9 +135,9 @@ gcc myapp.c -lbinn
 
 ### On Windows:
 
-Include the `binn-1.0.lib` in your MSVC project or use MinGW:
+Include the `binn-3.0.lib` in your MSVC project or use MinGW:
 ```
-gcc myapp.c -lbinn-1.0
+gcc myapp.c -lbinn-3.0
 ```
 
 
@@ -152,7 +152,7 @@ cd binn
 make
 sudo make install
 ```
-It will create the file `libbinn.so.1.0` on Linux and `libbinn.1.dylib` on MacOSX
+It will create the file `libbinn.so.3.0` on Linux and `libbinn.3.dylib` on MacOSX
 
 
 ### On Windows:
@@ -164,7 +164,7 @@ git clone https://github.com/liteserver/binn
 cd binn
 make
 ```
-Both will create the file `binn-1.0.dll`
+Both will create the file `binn-3.0.dll`
 
 
 ### On Android:
@@ -190,7 +190,7 @@ Use the included project in the test/win32 folder
 Reliability
 -----------
 
-The current version (1.0) is stable and production ready
+The current version (3.0) is stable and production ready
 
 As it is cross-platform, data can be transferred between little-endian and big-endian devices
 
