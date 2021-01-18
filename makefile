@@ -80,7 +80,7 @@ binn.o: src/binn.c src/binn.h
 dllmain.o: src/win32/dllmain.c
 	$(CC) -Wall -c $<
 
-install:
+install: binn.pc-install
 ifeq ($(TARGET_OS),Windows)
 	$(error install not supported on Windows)
 else ifeq ($(TARGET_OS),Mac)
@@ -98,7 +98,19 @@ else
 	cd $(DESTDIR)$(PREFIX)/lib && ln -sf $(LIBRARY) $(LINK2)
 endif
 
-clean:
+.PHONY: binn.pc binn.pc-install binn.pc-clean
+
+binn.pc:
+	sed "s#@prefix@#$(PREFIX)#" binn.pc.in > binn.pc
+
+binn.pc-install: binn.pc
+	mkdir -p $(DESTDIR)$(PREFIX)/lib/pkgconfig
+	install -m644 binn.pc $(DESTDIR)$(PREFIX)/lib/pkgconfig
+
+binn.pc-clean:
+	rm -f binn.pc
+
+clean: binn.pc-clean
 	rm -f *.o $(LIBRARY) libbinn.a libbinn.dylib
 
 uninstall:
