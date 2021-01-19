@@ -1,0 +1,12 @@
+# Package Information for pkg-config
+
+prefix=@prefix@
+exec_prefix=${prefix}
+libdir=${exec_prefix}/lib
+includedir=${prefix}/include
+
+Name: binn
+Description: Binary Serialization library
+Version: 3.0
+Libs: -L${libdir} -lbinn
+Cflags: -I${includedir}
