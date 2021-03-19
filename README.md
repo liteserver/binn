@@ -119,6 +119,7 @@ You can find more usage examples [here](usage.md) and in the [examples folder](e
  * Elixir: [thanos/binn](https://github.com/thanos/binn)
  * Erlang: [tonywallace64/erl_binn](https://github.com/tonywallace64/erl_binn) (partial implementation)
  * F#: [meeron/FSBinn](https://github.com/meeron/FSBinn)
+ * Rust: [Binn IR](https://lib.rs/crates/binn-ir)
 
 Feel free to make a wrapper for your preferred language. Then inform us so we can list it here.
 
