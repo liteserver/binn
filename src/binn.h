@@ -548,24 +548,44 @@ BOOL APIENTRY binn_set_blob(binn *item, void *ptr, int size, binn_mem_free pfree
 
 
 // FOREACH MACROS
-// must use these declarations in the function that will use them:
+// --------------
+//
+// We must use these declarations inside the functions that will use the macros:
+//
 //  binn_iter iter;
-//  char key[256];  // only for the object
-//  int  id;        // only for the map
 //  binn value;
+//  char key[256];  // only for objects
+//  int  id;        // only for maps
 
 #define binn_object_foreach(object, key, value)   \
     binn_iter_init(&iter, object, BINN_OBJECT);   \
     while (binn_object_next(&iter, key, &value))
 
-#define binn_map_foreach(map, id, value)      \
-    binn_iter_init(&iter, map, BINN_MAP);     \
+#define binn_map_foreach(map, id, value)          \
+    binn_iter_init(&iter, map, BINN_MAP);         \
     while (binn_map_next(&iter, &id, &value))
 
-#define binn_list_foreach(list, value)      \
-    binn_iter_init(&iter, list, BINN_LIST); \
+#define binn_list_foreach(list, value)            \
+    binn_iter_init(&iter, list, BINN_LIST);       \
     while (binn_list_next(&iter, &value))
 
+// If you need nested foreach loops, use the macros below for the nested loop
+// Also we need to add an additional declaration on the function to hold the iterator
+// We can add in the same line as the first iterator:
+//
+//  binn_iter iter, iter2;
+
+#define binn_object_foreach2(object, key, value)   \
+    binn_iter_init(&iter2, object, BINN_OBJECT);   \
+    while (binn_object_next(&iter2, key, &value))
+
+#define binn_map_foreach2(map, id, value)          \
+    binn_iter_init(&iter2, map, BINN_MAP);         \
+    while (binn_map_next(&iter2, &id, &value))
+
+#define binn_list_foreach2(list, value)            \
+    binn_iter_init(&iter2, list, BINN_LIST);       \
+    while (binn_list_next(&iter2, &value))
 
 
 /*************************************************************************************/
