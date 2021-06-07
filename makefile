@@ -60,7 +60,7 @@ libbinn.so.3.0: binn.o
 	$(STRIP) $@
 
 libbinn.3.dylib: binn.o
-	$(CC) -dynamiclib -install_name "$@" -current_version 3.0.0 -compatibility_version 3.0 -o $@ $^
+	$(CC) -dynamiclib -install_name "$(DESTDIR)$(PREFIX)/lib/$@" -current_version 3.0.0 -compatibility_version 3.0 -o $@ $^
 	$(STRIP) -x $@
 
 libbinn.a: binn.o
