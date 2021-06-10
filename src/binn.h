@@ -7,6 +7,8 @@
 #ifndef BINN_H
 #define BINN_H
 
+#include <stddef.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
