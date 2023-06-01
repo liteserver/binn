@@ -1,6 +1,6 @@
 Binn
 ====
-[![Build Status](https://travis-ci.org/liteserver/binn.svg?branch=master)](https://travis-ci.org/liteserver/binn)
+[![Build Status](https://github.com/liteserver/binn/actions/workflows/build-and-test.yml/badge.svg)](https://github.com/liteserver/binn/actions)
 [![Tests](https://img.shields.io/badge/tests-1815-brightgreen.svg)]()
 [![Stable](https://img.shields.io/badge/status-stable-brightgreen.svg)]()
 
