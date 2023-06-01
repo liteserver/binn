@@ -1,0 +1,21 @@
+name: Build and Test
+
+on:
+  workflow_dispatch:
+  push:
+  pull_request:
+    branches: [ "master" ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Build
+      run: make
+    - name: Install
+      run: sudo make install
+    - name: Test
+      run: make test
