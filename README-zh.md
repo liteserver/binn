@@ -4,7 +4,7 @@ Binn
 [![Tests](https://img.shields.io/badge/tests-1815-brightgreen.svg)]()
 [![Stable](https://img.shields.io/badge/status-stable-brightgreen.svg)]()
 
-<p align="right"><a href="https://github.com/liteserver/binn/blob/master/README.md">English</a> | <a href="https://github.com/liteserver/binn/blob/master/README-ja.md">日本語</a> | <a href="https://github.com/liteserver/binn/blob/master/README-ru.md">Русский</a></p>
+<p align="left"><a href="https://github.com/liteserver/binn/blob/master/README.md">English</a> | <a href="https://github.com/liteserver/binn/blob/master/README-ja.md">日本語</a> | <a href="https://github.com/liteserver/binn/blob/master/README-ru.md">Русский</a></p>
 
 Binn是一种二进制数据序列化格式，设计目的是使其**紧凑**，**快速**且**易于使用**。
 

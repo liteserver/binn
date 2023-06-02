@@ -4,7 +4,7 @@ Binn
 [![Tests](https://img.shields.io/badge/tests-1815-brightgreen.svg)]()
 [![Stable](https://img.shields.io/badge/status-stable-brightgreen.svg)]()
 
-<p align="right"><a href="https://github.com/liteserver/binn/blob/master/README.md">English</a> | <a href="https://github.com/liteserver/binn/blob/master/README-zh.md">中文</a> | <a href="https://github.com/liteserver/binn/blob/master/README-ru.md">Русский</a></p>
+<p align="left"><a href="https://github.com/liteserver/binn/blob/master/README.md">English</a> | <a href="https://github.com/liteserver/binn/blob/master/README-zh.md">中文</a> | <a href="https://github.com/liteserver/binn/blob/master/README-ru.md">Русский</a></p>
 
 Binnは、**コンパクト**で**高速**で**使いやすい**バイナリデータシリアル化フォーマットです。
 
