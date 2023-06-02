@@ -4,6 +4,8 @@ Binn
 [![Tests](https://img.shields.io/badge/tests-1815-brightgreen.svg)]()
 [![Stable](https://img.shields.io/badge/status-stable-brightgreen.svg)]()
 
+<p align="right"><a href="https://github.com/liteserver/binn/blob/master/README-zh.md">中文</a> | <a href="https://github.com/liteserver/binn/blob/master/README-ja.md">日本語</a> | <a href="https://github.com/liteserver/binn/blob/master/README-ru.md">Русский</a></p>
+
 Binn is a binary data serialization format designed to be **compact**, **fast** and **easy to use**.
 
 
