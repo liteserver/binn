@@ -368,7 +368,7 @@ binn * APIENTRY binn_object() {
 /***************************************************************************/
 
 binn * APIENTRY binn_copy(void *old) {
-  int type, count, size, header_size;
+  int type, count, size=0, header_size;
   unsigned char *old_ptr = binn_ptr(old);
   binn *item;
 
@@ -567,8 +567,6 @@ BINN_PRIVATE unsigned char * AdvanceDataPos(unsigned char *p, unsigned char *pli
     return 0;
   }
 
-  if (p > plimit) return 0;
-
   return p;
 
 }
@@ -594,6 +592,7 @@ BINN_PRIVATE int read_map_id(unsigned char **pp, unsigned char *plimit) {
   int id, extra_bytes;
 
   p = *pp;
+  if (p > plimit) return 0;
 
   c = *p++;
 
@@ -1168,6 +1167,7 @@ BINN_PRIVATE BOOL IsValidBinnHeader(void *pbuf, int *ptype, int *pcount, int *ps
   p = (unsigned char *) pbuf;
 
   if (psize && *psize > 0) {
+    if (*psize < MIN_BINN_SIZE) return FALSE;
     plimit = p + *psize - 1;
   }
 
@@ -1229,7 +1229,7 @@ BINN_PRIVATE BOOL IsValidBinnHeader(void *pbuf, int *ptype, int *pcount, int *ps
   // return the values
   if (ptype)  *ptype  = type;
   if (pcount) *pcount = count;
-  if (psize && *psize==0) *psize = size;
+  if (psize)  *psize  = size;
   if (pheadersize) *pheadersize = (int) (p - (unsigned char*)pbuf);
   return TRUE;
 }
@@ -1348,7 +1348,7 @@ BOOL APIENTRY binn_is_valid_ex(void *ptr, int *ptype, int *pcount, int *psize) {
   unsigned char *p, *plimit, *base, len;
   void *pbuf;
 
-  pbuf = binn_ptr(ptr);
+  pbuf = ptr;  //binn_ptr(ptr);
   if (pbuf == NULL) return FALSE;
 
   // is there an informed size?
@@ -1380,7 +1380,7 @@ BOOL APIENTRY binn_is_valid_ex(void *ptr, int *ptype, int *pcount, int *psize) {
 
   p = (unsigned char *)pbuf;
   base = p;
-  plimit = p + size;
+  plimit = p + size - 1;
 
   p += header_size;
 
@@ -1388,6 +1388,7 @@ BOOL APIENTRY binn_is_valid_ex(void *ptr, int *ptype, int *pcount, int *psize) {
   for (i = 0; i < count; i++) {
     switch (type) {
       case BINN_OBJECT:
+        if (p > plimit) goto Invalid;
         // gets the string size (argument name)
         len = *p;
         p++;
@@ -1637,7 +1638,7 @@ BOOL APIENTRY binn_list_get_value(void* ptr, int pos, binn *value) {
 
   p = (unsigned char *) ptr;
   base = p;
-  plimit = p + size;
+  plimit = p + size - 1;
   p += header_size;
 
   for (i = 0; i < pos; i++) {
