@@ -441,7 +441,7 @@ binn * APIENTRY binn_open_ex(void *data, int size) {
 
   item = (binn*) binn_malloc(sizeof(binn));
 
-  if (binn_load_ex(data, item, size) == FALSE) {
+  if (binn_load_ex(data, size, item) == FALSE) {
     free_fn(item);
     return NULL;
   }
