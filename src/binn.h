@@ -380,8 +380,10 @@ BOOL   APIENTRY binn_is_struct(void *ptr);
 
 // Loading a binn buffer into a binn value - this is optional
 
-BOOL   APIENTRY binn_load(void *data, binn *item);  // on stack
-binn * APIENTRY binn_open(void *data);              // allocated
+binn * APIENTRY binn_open(void *data);              // allocated - unsecure
+binn * APIENTRY binn_open_ex(void *data, int size); // allocated - secure
+BOOL   APIENTRY binn_load(void *data, binn *item);  // on stack - unsecure
+BOOL   APIENTRY binn_load_ex(void *data, int size, binn *value); // secure
 
 
 // easiest interface to use, but don't check if the value is there

@@ -389,6 +389,7 @@ binn * APIENTRY binn_copy(void *old) {
 
 /*************************************************************************************/
 
+// deprecated: unsecure. the size can be corrupted accidentally or intentionally
 BOOL APIENTRY binn_load(void *data, binn *value) {
 
   if ((data == NULL) || (value == NULL)) return FALSE;
@@ -403,6 +404,21 @@ BOOL APIENTRY binn_load(void *data, binn *value) {
 
 }
 
+BOOL APIENTRY binn_load_ex(void *data, int size, binn *value) {
+
+  if ((data == NULL) || (value == NULL) || (size <= 0)) return FALSE;
+  memset(value, 0, sizeof(binn));
+  value->header = BINN_MAGIC;
+  //value->allocated = FALSE;  --  already zeroed
+  //value->writable = FALSE;
+
+  if (binn_is_valid_ex(data, &value->type, &value->count, &size) == FALSE) return FALSE;
+  value->ptr = data;
+  value->size = size;
+  return TRUE;
+
+}
+
 /*************************************************************************************/
 
 binn * APIENTRY binn_open(void *data) {
@@ -411,6 +427,21 @@ binn * APIENTRY binn_open(void *data) {
   item = (binn*) binn_malloc(sizeof(binn));
 
   if (binn_load(data, item) == FALSE) {
+    free_fn(item);
+    return NULL;
+  }
+
+  item->allocated = TRUE;
+  return item;
+
+}
+
+binn * APIENTRY binn_open_ex(void *data, int size) {
+  binn *item;
+
+  item = (binn*) binn_malloc(sizeof(binn));
+
+  if (binn_load_ex(data, item, size) == FALSE) {
     free_fn(item);
     return NULL;
   }
