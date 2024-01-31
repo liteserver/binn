@@ -6,8 +6,7 @@
 
 static void decode_binn(const unsigned char *buf, unsigned int len){
   binn item;
-
-  binn_load(buf, &item);
+  binn_load_ex(buf, len, &item);
 }
 
 int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
