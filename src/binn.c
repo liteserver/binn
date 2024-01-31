@@ -146,7 +146,7 @@ BINN_PRIVATE void copy_be64(u64 *pdest, u64 *psource) {
 #define strnicmp strncasecmp
 #endif
 
-BINN_PRIVATE BOOL IsValidBinnHeader(void *pbuf, int *ptype, int *pcount, int *psize, int *pheadersize);
+BINN_PRIVATE BOOL IsValidBinnHeader(const void *pbuf, int *ptype, int *pcount, int *psize, int *pheadersize);
 
 /***************************************************************************/
 
@@ -183,7 +183,7 @@ BINN_PRIVATE void * binn_malloc(int size) {
 
 /***************************************************************************/
 
-BINN_PRIVATE void * binn_memdup(void *src, int size) {
+BINN_PRIVATE void * binn_memdup(const void *src, int size) {
   void *dest;
 
   if (src == NULL || size <= 0) return NULL;
@@ -367,7 +367,7 @@ binn * APIENTRY binn_object() {
 
 /***************************************************************************/
 
-binn * APIENTRY binn_copy(void *old) {
+binn * APIENTRY binn_copy(const void *old) {
   int type, count, size, header_size;
   unsigned char *old_ptr = binn_ptr(old);
   binn *item;
@@ -390,7 +390,7 @@ binn * APIENTRY binn_copy(void *old) {
 /*************************************************************************************/
 
 // deprecated: unsecure. the size can be corrupted accidentally or intentionally
-BOOL APIENTRY binn_load(void *data, binn *value) {
+BOOL APIENTRY binn_load(const void *data, binn *value) {
 
   if (data == NULL || value == NULL) return FALSE;
   memset(value, 0, sizeof(binn));
@@ -399,12 +399,12 @@ BOOL APIENTRY binn_load(void *data, binn *value) {
   //value->writable = FALSE;
 
   if (binn_is_valid(data, &value->type, &value->count, &value->size) == FALSE) return FALSE;
-  value->ptr = data;
+  value->ptr = (void*) data;
   return TRUE;
 
 }
 
-BOOL APIENTRY binn_load_ex(void *data, int size, binn *value) {
+BOOL APIENTRY binn_load_ex(const void *data, int size, binn *value) {
 
   if (data == NULL || value == NULL || size <= 0) return FALSE;
   memset(value, 0, sizeof(binn));
@@ -413,7 +413,7 @@ BOOL APIENTRY binn_load_ex(void *data, int size, binn *value) {
   //value->writable = FALSE;
 
   if (binn_is_valid_ex(data, &value->type, &value->count, &size) == FALSE) return FALSE;
-  value->ptr = data;
+  value->ptr = (void*) data;
   value->size = size;
   return TRUE;
 
@@ -421,7 +421,7 @@ BOOL APIENTRY binn_load_ex(void *data, int size, binn *value) {
 
 /*************************************************************************************/
 
-binn * APIENTRY binn_open(void *data) {
+binn * APIENTRY binn_open(const void *data) {
   binn *item;
 
   item = (binn*) binn_malloc(sizeof(binn));
@@ -436,7 +436,7 @@ binn * APIENTRY binn_open(void *data) {
 
 }
 
-binn * APIENTRY binn_open_ex(void *data, int size) {
+binn * APIENTRY binn_open_ex(const void *data, int size) {
   binn *item;
 
   item = (binn*) binn_malloc(sizeof(binn));
@@ -453,7 +453,7 @@ binn * APIENTRY binn_open_ex(void *data, int size) {
 
 /***************************************************************************/
 
-BINN_PRIVATE int binn_get_ptr_type(void *ptr) {
+BINN_PRIVATE int binn_get_ptr_type(const void *ptr) {
 
   if (ptr == NULL) return 0;
 
@@ -468,7 +468,7 @@ BINN_PRIVATE int binn_get_ptr_type(void *ptr) {
 
 /***************************************************************************/
 
-BOOL APIENTRY binn_is_struct(void *ptr) {
+BOOL APIENTRY binn_is_struct(const void *ptr) {
 
   if (ptr == NULL) return FALSE;
 
@@ -1189,7 +1189,7 @@ void * APIENTRY binn_release(binn *item) {
 
 /***************************************************************************/
 
-BINN_PRIVATE BOOL IsValidBinnHeader(void *pbuf, int *ptype, int *pcount, int *psize, int *pheadersize) {
+BINN_PRIVATE BOOL IsValidBinnHeader(const void *pbuf, int *ptype, int *pcount, int *psize, int *pheadersize) {
   unsigned char byte, *p, *plimit=0;
   int int32, type, size, count;
 
@@ -1267,7 +1267,7 @@ BINN_PRIVATE BOOL IsValidBinnHeader(void *pbuf, int *ptype, int *pcount, int *ps
 
 /***************************************************************************/
 
-BINN_PRIVATE int binn_buf_type(void *pbuf) {
+BINN_PRIVATE int binn_buf_type(const void *pbuf) {
   int  type;
 
   if (!IsValidBinnHeader(pbuf, &type, NULL, NULL, NULL)) return INVALID_BINN;
@@ -1278,7 +1278,7 @@ BINN_PRIVATE int binn_buf_type(void *pbuf) {
 
 /***************************************************************************/
 
-BINN_PRIVATE int binn_buf_count(void *pbuf) {
+BINN_PRIVATE int binn_buf_count(const void *pbuf) {
   int  nitems;
 
   if (!IsValidBinnHeader(pbuf, NULL, &nitems, NULL, NULL)) return 0;
@@ -1289,7 +1289,7 @@ BINN_PRIVATE int binn_buf_count(void *pbuf) {
 
 /***************************************************************************/
 
-BINN_PRIVATE int binn_buf_size(void *pbuf) {
+BINN_PRIVATE int binn_buf_size(const void *pbuf) {
   int  size=0;
 
   if (!IsValidBinnHeader(pbuf, NULL, NULL, &size, NULL)) return 0;
@@ -1300,7 +1300,7 @@ BINN_PRIVATE int binn_buf_size(void *pbuf) {
 
 /***************************************************************************/
 
-void * APIENTRY binn_ptr(void *ptr) {
+void * APIENTRY binn_ptr(const void *ptr) {
   binn *item;
 
   switch (binn_get_ptr_type(ptr)) {
@@ -1311,7 +1311,7 @@ void * APIENTRY binn_ptr(void *ptr) {
     }
     return item->ptr;
   case BINN_BUFFER:
-    return ptr;
+    return (void*)ptr;
   default:
     return NULL;
   }
@@ -1320,7 +1320,7 @@ void * APIENTRY binn_ptr(void *ptr) {
 
 /***************************************************************************/
 
-int APIENTRY binn_size(void *ptr) {
+int APIENTRY binn_size(const void *ptr) {
   binn *item;
 
   switch (binn_get_ptr_type(ptr)) {
@@ -1340,7 +1340,7 @@ int APIENTRY binn_size(void *ptr) {
 
 /***************************************************************************/
 
-int APIENTRY binn_type(void *ptr) {
+int APIENTRY binn_type(const void *ptr) {
   binn *item;
 
   switch (binn_get_ptr_type(ptr)) {
@@ -1357,7 +1357,7 @@ int APIENTRY binn_type(void *ptr) {
 
 /***************************************************************************/
 
-int APIENTRY binn_count(void *ptr) {
+int APIENTRY binn_count(const void *ptr) {
   binn *item;
 
   switch (binn_get_ptr_type(ptr)) {
@@ -1374,7 +1374,7 @@ int APIENTRY binn_count(void *ptr) {
 
 /***************************************************************************/
 
-BOOL APIENTRY binn_is_valid_ex(void *ptr, int *ptype, int *pcount, int *psize) {
+BOOL APIENTRY binn_is_valid_ex(const void *ptr, int *ptype, int *pcount, int *psize) {
   int  i, type, count, size, header_size;
   unsigned char *p, *plimit, *base, len;
 
@@ -1451,7 +1451,7 @@ Invalid:
 
 /***************************************************************************/
 
-BOOL APIENTRY binn_is_valid(void *ptr, int *ptype, int *pcount, int *psize) {
+BOOL APIENTRY binn_is_valid(const void *ptr, int *ptype, int *pcount, int *psize) {
 
   if (ptype)  *ptype  = 0;
   if (pcount) *pcount = 0;
@@ -1615,7 +1615,7 @@ BINN_PRIVATE void * store_value(binn *value) {
 /*** READ FUNCTIONS ********************************************************/
 /***************************************************************************/
 
-BOOL APIENTRY binn_object_get_value(void *ptr, const char *key, binn *value) {
+BOOL APIENTRY binn_object_get_value(const void *ptr, const char *key, binn *value) {
   int type, count, size=0, header_size;
   unsigned char *p, *plimit;
 
@@ -1640,7 +1640,7 @@ BOOL APIENTRY binn_object_get_value(void *ptr, const char *key, binn *value) {
 
 /***************************************************************************/
 
-BOOL APIENTRY binn_map_get_value(void* ptr, int id, binn *value) {
+BOOL APIENTRY binn_map_get_value(const void *ptr, int id, binn *value) {
   int type, count, size=0, header_size;
   unsigned char *p, *plimit;
 
@@ -1665,7 +1665,7 @@ BOOL APIENTRY binn_map_get_value(void* ptr, int id, binn *value) {
 
 /***************************************************************************/
 
-BOOL APIENTRY binn_list_get_value(void* ptr, int pos, binn *value) {
+BOOL APIENTRY binn_list_get_value(const void *ptr, int pos, binn *value) {
   int  i, type, count, size=0, header_size;
   unsigned char *p, *plimit, *base;
 
@@ -1698,7 +1698,7 @@ BOOL APIENTRY binn_list_get_value(void* ptr, int pos, binn *value) {
 /*** READ PAIR BY POSITION *************************************************/
 /***************************************************************************/
 
-BINN_PRIVATE BOOL binn_read_pair(int expected_type, void *ptr, int pos, int *pid, char *pkey, binn *value) {
+BINN_PRIVATE BOOL binn_read_pair(int expected_type, const void *ptr, int pos, int *pid, char *pkey, binn *value) {
   int  type, count, size=0, header_size;
   int  i, int32, id = 0, counter=0;
   unsigned char *p, *plimit, *base, *key = NULL, len = 0;
@@ -1759,7 +1759,7 @@ found:
 
 /***************************************************************************/
 
-BOOL APIENTRY binn_map_get_pair(void *ptr, int pos, int *pid, binn *value) {
+BOOL APIENTRY binn_map_get_pair(const void *ptr, int pos, int *pid, binn *value) {
 
   return binn_read_pair(BINN_MAP, ptr, pos, pid, NULL, value);
 
@@ -1767,7 +1767,7 @@ BOOL APIENTRY binn_map_get_pair(void *ptr, int pos, int *pid, binn *value) {
 
 /***************************************************************************/
 
-BOOL APIENTRY binn_object_get_pair(void *ptr, int pos, char *pkey, binn *value) {
+BOOL APIENTRY binn_object_get_pair(const void *ptr, int pos, char *pkey, binn *value) {
 
   return binn_read_pair(BINN_OBJECT, ptr, pos, NULL, pkey, value);
 
@@ -1775,7 +1775,7 @@ BOOL APIENTRY binn_object_get_pair(void *ptr, int pos, char *pkey, binn *value) 
 
 /***************************************************************************/
 
-binn * APIENTRY binn_map_pair(void *map, int pos, int *pid) {
+binn * APIENTRY binn_map_pair(const void *map, int pos, int *pid) {
   binn *value;
 
   value = (binn *) binn_malloc(sizeof(binn));
@@ -1792,7 +1792,7 @@ binn * APIENTRY binn_map_pair(void *map, int pos, int *pid) {
 
 /***************************************************************************/
 
-binn * APIENTRY binn_object_pair(void *obj, int pos, char *pkey) {
+binn * APIENTRY binn_object_pair(const void *obj, int pos, char *pkey) {
   binn *value;
 
   value = (binn *) binn_malloc(sizeof(binn));
@@ -1810,7 +1810,7 @@ binn * APIENTRY binn_object_pair(void *obj, int pos, char *pkey) {
 /***************************************************************************/
 /***************************************************************************/
 
-void * APIENTRY binn_map_read_pair(void *ptr, int pos, int *pid, int *ptype, int *psize) {
+void * APIENTRY binn_map_read_pair(const void *ptr, int pos, int *pid, int *ptype, int *psize) {
   binn value;
 
   if (binn_map_get_pair(ptr, pos, pid, &value) == FALSE) return NULL;
@@ -1826,7 +1826,7 @@ void * APIENTRY binn_map_read_pair(void *ptr, int pos, int *pid, int *ptype, int
 
 /***************************************************************************/
 
-void * APIENTRY binn_object_read_pair(void *ptr, int pos, char *pkey, int *ptype, int *psize) {
+void * APIENTRY binn_object_read_pair(const void *ptr, int pos, char *pkey, int *ptype, int *psize) {
   binn value;
 
   if (binn_object_get_pair(ptr, pos, pkey, &value) == FALSE) return NULL;
@@ -2251,7 +2251,7 @@ BINN_PRIVATE int int_type(int type)  {
 
 /*************************************************************************************/
 
-BINN_PRIVATE BOOL copy_raw_value(void *psource, void *pdest, int data_store) {
+BINN_PRIVATE BOOL copy_raw_value(const void *psource, void *pdest, int data_store) {
 
   switch (data_store) {
   case BINN_STORAGE_NOBYTES:
@@ -2283,7 +2283,7 @@ BINN_PRIVATE BOOL copy_raw_value(void *psource, void *pdest, int data_store) {
 
 /*************************************************************************************/
 
-BINN_PRIVATE BOOL copy_int_value(void *psource, void *pdest, int source_type, int dest_type) {
+BINN_PRIVATE BOOL copy_int_value(const void *psource, void *pdest, int source_type, int dest_type) {
   uint64 vuint64 = 0; int64 vint64 = 0;
 
   switch (source_type) {
@@ -2372,7 +2372,7 @@ BINN_PRIVATE BOOL copy_int_value(void *psource, void *pdest, int source_type, in
 
 /*************************************************************************************/
 
-BINN_PRIVATE BOOL copy_float_value(void *psource, void *pdest, int source_type, int dest_type) {
+BINN_PRIVATE BOOL copy_float_value(const void *psource, void *pdest, int source_type, int dest_type) {
 
   switch (source_type) {
   case BINN_FLOAT32:
@@ -2391,7 +2391,7 @@ BINN_PRIVATE BOOL copy_float_value(void *psource, void *pdest, int source_type, 
 
 /*************************************************************************************/
 
-BINN_PRIVATE void zero_value(void *pvalue, int type) {
+BINN_PRIVATE void zero_value(const void *pvalue, int type) {
   //int size=0;
 
   switch (binn_get_read_storage(type)) {
@@ -2528,7 +2528,7 @@ BOOL APIENTRY binn_object_set_new(binn *obj, const char *key, binn *value) {
 /*** READ FUNCTIONS ******************************************************************/
 /*************************************************************************************/
 
-binn * APIENTRY binn_list_value(void *ptr, int pos) {
+binn * APIENTRY binn_list_value(const void *ptr, int pos) {
   binn *value;
 
   value = (binn *) binn_malloc(sizeof(binn));
@@ -2545,7 +2545,7 @@ binn * APIENTRY binn_list_value(void *ptr, int pos) {
 
 /*************************************************************************************/
 
-binn * APIENTRY binn_map_value(void *ptr, int id) {
+binn * APIENTRY binn_map_value(const void *ptr, int id) {
   binn *value;
 
   value = (binn *) binn_malloc(sizeof(binn));
@@ -2562,7 +2562,7 @@ binn * APIENTRY binn_map_value(void *ptr, int id) {
 
 /*************************************************************************************/
 
-binn * APIENTRY binn_object_value(void *ptr, const char *key) {
+binn * APIENTRY binn_object_value(const void *ptr, const char *key) {
   binn *value;
 
   value = (binn *) binn_malloc(sizeof(binn));
@@ -2580,7 +2580,7 @@ binn * APIENTRY binn_object_value(void *ptr, const char *key) {
 /***************************************************************************/
 /***************************************************************************/
 
-void * APIENTRY binn_list_read(void *list, int pos, int *ptype, int *psize) {
+void * APIENTRY binn_list_read(const void *list, int pos, int *ptype, int *psize) {
   binn value;
 
   if (binn_list_get_value(list, pos, &value) == FALSE) return NULL;
@@ -2596,7 +2596,7 @@ void * APIENTRY binn_list_read(void *list, int pos, int *ptype, int *psize) {
 
 /***************************************************************************/
 
-void * APIENTRY binn_map_read(void *map, int id, int *ptype, int *psize) {
+void * APIENTRY binn_map_read(const void *map, int id, int *ptype, int *psize) {
   binn value;
 
   if (binn_map_get_value(map, id, &value) == FALSE) return NULL;
@@ -2612,7 +2612,7 @@ void * APIENTRY binn_map_read(void *map, int id, int *ptype, int *psize) {
 
 /***************************************************************************/
 
-void * APIENTRY binn_object_read(void *obj, const char *key, int *ptype, int *psize) {
+void * APIENTRY binn_object_read(const void *obj, const char *key, int *ptype, int *psize) {
   binn value;
 
   if (binn_object_get_value(obj, key, &value) == FALSE) return NULL;
@@ -2629,7 +2629,7 @@ void * APIENTRY binn_object_read(void *obj, const char *key, int *ptype, int *ps
 /***************************************************************************/
 /***************************************************************************/
 
-BOOL APIENTRY binn_list_get(void *ptr, int pos, int type, void *pvalue, int *psize) {
+BOOL APIENTRY binn_list_get(const void *ptr, int pos, int type, void *pvalue, int *psize) {
   binn value;
   int storage_type;
 
@@ -2650,7 +2650,7 @@ BOOL APIENTRY binn_list_get(void *ptr, int pos, int type, void *pvalue, int *psi
 
 /***************************************************************************/
 
-BOOL APIENTRY binn_map_get(void *ptr, int id, int type, void *pvalue, int *psize) {
+BOOL APIENTRY binn_map_get(const void *ptr, int id, int type, void *pvalue, int *psize) {
   binn value;
   int storage_type;
 
@@ -2673,7 +2673,7 @@ BOOL APIENTRY binn_map_get(void *ptr, int id, int type, void *pvalue, int *psize
 
 //   if (binn_object_get(obj, "multiplier", BINN_INT32, &multiplier, NULL) == FALSE) xxx;
 
-BOOL APIENTRY binn_object_get(void *ptr, const char *key, int type, void *pvalue, int *psize) {
+BOOL APIENTRY binn_object_get(const void *ptr, const char *key, int type, void *pvalue, int *psize) {
   binn value;
   int storage_type;
 
@@ -2702,7 +2702,7 @@ BOOL APIENTRY binn_object_get(void *ptr, const char *key, int type, void *pvalue
 //    is there any problem with wrappers? can these wrappers implement these functions using the header?
 //    if as static, will they be present even on modules that don't use the functions?
 
-signed char APIENTRY binn_list_int8(void *list, int pos) {
+signed char APIENTRY binn_list_int8(const void *list, int pos) {
   signed char value;
 
   binn_list_get(list, pos, BINN_INT8, &value, NULL);
@@ -2710,7 +2710,7 @@ signed char APIENTRY binn_list_int8(void *list, int pos) {
   return value;
 }
 
-short APIENTRY binn_list_int16(void *list, int pos) {
+short APIENTRY binn_list_int16(const void *list, int pos) {
   short value;
 
   binn_list_get(list, pos, BINN_INT16, &value, NULL);
@@ -2718,7 +2718,7 @@ short APIENTRY binn_list_int16(void *list, int pos) {
   return value;
 }
 
-int APIENTRY binn_list_int32(void *list, int pos) {
+int APIENTRY binn_list_int32(const void *list, int pos) {
   int value;
 
   binn_list_get(list, pos, BINN_INT32, &value, NULL);
@@ -2726,7 +2726,7 @@ int APIENTRY binn_list_int32(void *list, int pos) {
   return value;
 }
 
-int64 APIENTRY binn_list_int64(void *list, int pos) {
+int64 APIENTRY binn_list_int64(const void *list, int pos) {
   int64 value;
 
   binn_list_get(list, pos, BINN_INT64, &value, NULL);
@@ -2734,7 +2734,7 @@ int64 APIENTRY binn_list_int64(void *list, int pos) {
   return value;
 }
 
-unsigned char APIENTRY binn_list_uint8(void *list, int pos) {
+unsigned char APIENTRY binn_list_uint8(const void *list, int pos) {
   unsigned char value;
 
   binn_list_get(list, pos, BINN_UINT8, &value, NULL);
@@ -2742,7 +2742,7 @@ unsigned char APIENTRY binn_list_uint8(void *list, int pos) {
   return value;
 }
 
-unsigned short APIENTRY binn_list_uint16(void *list, int pos) {
+unsigned short APIENTRY binn_list_uint16(const void *list, int pos) {
   unsigned short value;
 
   binn_list_get(list, pos, BINN_UINT16, &value, NULL);
@@ -2750,7 +2750,7 @@ unsigned short APIENTRY binn_list_uint16(void *list, int pos) {
   return value;
 }
 
-unsigned int APIENTRY binn_list_uint32(void *list, int pos) {
+unsigned int APIENTRY binn_list_uint32(const void *list, int pos) {
   unsigned int value;
 
   binn_list_get(list, pos, BINN_UINT32, &value, NULL);
@@ -2758,7 +2758,7 @@ unsigned int APIENTRY binn_list_uint32(void *list, int pos) {
   return value;
 }
 
-uint64 APIENTRY binn_list_uint64(void *list, int pos) {
+uint64 APIENTRY binn_list_uint64(const void *list, int pos) {
   uint64 value;
 
   binn_list_get(list, pos, BINN_UINT64, &value, NULL);
@@ -2766,7 +2766,7 @@ uint64 APIENTRY binn_list_uint64(void *list, int pos) {
   return value;
 }
 
-float APIENTRY binn_list_float(void *list, int pos) {
+float APIENTRY binn_list_float(const void *list, int pos) {
   float value;
 
   binn_list_get(list, pos, BINN_FLOAT32, &value, NULL);
@@ -2774,7 +2774,7 @@ float APIENTRY binn_list_float(void *list, int pos) {
   return value;
 }
 
-double APIENTRY binn_list_double(void *list, int pos) {
+double APIENTRY binn_list_double(const void *list, int pos) {
   double value;
 
   binn_list_get(list, pos, BINN_FLOAT64, &value, NULL);
@@ -2782,7 +2782,7 @@ double APIENTRY binn_list_double(void *list, int pos) {
   return value;
 }
 
-BOOL APIENTRY binn_list_bool(void *list, int pos) {
+BOOL APIENTRY binn_list_bool(const void *list, int pos) {
   BOOL value;
 
   binn_list_get(list, pos, BINN_BOOL, &value, NULL);
@@ -2790,13 +2790,13 @@ BOOL APIENTRY binn_list_bool(void *list, int pos) {
   return value;
 }
 
-BOOL APIENTRY binn_list_null(void *list, int pos) {
+BOOL APIENTRY binn_list_null(const void *list, int pos) {
 
   return binn_list_get(list, pos, BINN_NULL, NULL, NULL);
 
 }
 
-char * APIENTRY binn_list_str(void *list, int pos) {
+char * APIENTRY binn_list_str(const void *list, int pos) {
   char *value;
 
   binn_list_get(list, pos, BINN_STRING, &value, NULL);
@@ -2804,7 +2804,7 @@ char * APIENTRY binn_list_str(void *list, int pos) {
   return value;
 }
 
-void * APIENTRY binn_list_blob(void *list, int pos, int *psize) {
+void * APIENTRY binn_list_blob(const void *list, int pos, int *psize) {
   void *value;
 
   binn_list_get(list, pos, BINN_BLOB, &value, psize);
@@ -2812,7 +2812,7 @@ void * APIENTRY binn_list_blob(void *list, int pos, int *psize) {
   return value;
 }
 
-void * APIENTRY binn_list_list(void *list, int pos) {
+void * APIENTRY binn_list_list(const void *list, int pos) {
   void *value;
 
   binn_list_get(list, pos, BINN_LIST, &value, NULL);
@@ -2820,7 +2820,7 @@ void * APIENTRY binn_list_list(void *list, int pos) {
   return value;
 }
 
-void * APIENTRY binn_list_map(void *list, int pos) {
+void * APIENTRY binn_list_map(const void *list, int pos) {
   void *value;
 
   binn_list_get(list, pos, BINN_MAP, &value, NULL);
@@ -2828,7 +2828,7 @@ void * APIENTRY binn_list_map(void *list, int pos) {
   return value;
 }
 
-void * APIENTRY binn_list_object(void *list, int pos) {
+void * APIENTRY binn_list_object(const void *list, int pos) {
   void *value;
 
   binn_list_get(list, pos, BINN_OBJECT, &value, NULL);
@@ -2838,7 +2838,7 @@ void * APIENTRY binn_list_object(void *list, int pos) {
 
 /***************************************************************************/
 
-signed char APIENTRY binn_map_int8(void *map, int id) {
+signed char APIENTRY binn_map_int8(const void *map, int id) {
   signed char value;
 
   binn_map_get(map, id, BINN_INT8, &value, NULL);
@@ -2846,7 +2846,7 @@ signed char APIENTRY binn_map_int8(void *map, int id) {
   return value;
 }
 
-short APIENTRY binn_map_int16(void *map, int id) {
+short APIENTRY binn_map_int16(const void *map, int id) {
   short value;
 
   binn_map_get(map, id, BINN_INT16, &value, NULL);
@@ -2854,7 +2854,7 @@ short APIENTRY binn_map_int16(void *map, int id) {
   return value;
 }
 
-int APIENTRY binn_map_int32(void *map, int id) {
+int APIENTRY binn_map_int32(const void *map, int id) {
   int value;
 
   binn_map_get(map, id, BINN_INT32, &value, NULL);
@@ -2862,7 +2862,7 @@ int APIENTRY binn_map_int32(void *map, int id) {
   return value;
 }
 
-int64 APIENTRY binn_map_int64(void *map, int id) {
+int64 APIENTRY binn_map_int64(const void *map, int id) {
   int64 value;
 
   binn_map_get(map, id, BINN_INT64, &value, NULL);
@@ -2870,7 +2870,7 @@ int64 APIENTRY binn_map_int64(void *map, int id) {
   return value;
 }
 
-unsigned char APIENTRY binn_map_uint8(void *map, int id) {
+unsigned char APIENTRY binn_map_uint8(const void *map, int id) {
   unsigned char value;
 
   binn_map_get(map, id, BINN_UINT8, &value, NULL);
@@ -2878,7 +2878,7 @@ unsigned char APIENTRY binn_map_uint8(void *map, int id) {
   return value;
 }
 
-unsigned short APIENTRY binn_map_uint16(void *map, int id) {
+unsigned short APIENTRY binn_map_uint16(const void *map, int id) {
   unsigned short value;
 
   binn_map_get(map, id, BINN_UINT16, &value, NULL);
@@ -2886,7 +2886,7 @@ unsigned short APIENTRY binn_map_uint16(void *map, int id) {
   return value;
 }
 
-unsigned int APIENTRY binn_map_uint32(void *map, int id) {
+unsigned int APIENTRY binn_map_uint32(const void *map, int id) {
   unsigned int value;
 
   binn_map_get(map, id, BINN_UINT32, &value, NULL);
@@ -2894,7 +2894,7 @@ unsigned int APIENTRY binn_map_uint32(void *map, int id) {
   return value;
 }
 
-uint64 APIENTRY binn_map_uint64(void *map, int id) {
+uint64 APIENTRY binn_map_uint64(const void *map, int id) {
   uint64 value;
 
   binn_map_get(map, id, BINN_UINT64, &value, NULL);
@@ -2902,7 +2902,7 @@ uint64 APIENTRY binn_map_uint64(void *map, int id) {
   return value;
 }
 
-float APIENTRY binn_map_float(void *map, int id) {
+float APIENTRY binn_map_float(const void *map, int id) {
   float value;
 
   binn_map_get(map, id, BINN_FLOAT32, &value, NULL);
@@ -2910,7 +2910,7 @@ float APIENTRY binn_map_float(void *map, int id) {
   return value;
 }
 
-double APIENTRY binn_map_double(void *map, int id) {
+double APIENTRY binn_map_double(const void *map, int id) {
   double value;
 
   binn_map_get(map, id, BINN_FLOAT64, &value, NULL);
@@ -2918,7 +2918,7 @@ double APIENTRY binn_map_double(void *map, int id) {
   return value;
 }
 
-BOOL APIENTRY binn_map_bool(void *map, int id) {
+BOOL APIENTRY binn_map_bool(const void *map, int id) {
   BOOL value;
 
   binn_map_get(map, id, BINN_BOOL, &value, NULL);
@@ -2926,13 +2926,13 @@ BOOL APIENTRY binn_map_bool(void *map, int id) {
   return value;
 }
 
-BOOL APIENTRY binn_map_null(void *map, int id) {
+BOOL APIENTRY binn_map_null(const void *map, int id) {
 
   return binn_map_get(map, id, BINN_NULL, NULL, NULL);
 
 }
 
-char * APIENTRY binn_map_str(void *map, int id) {
+char * APIENTRY binn_map_str(const void *map, int id) {
   char *value;
 
   binn_map_get(map, id, BINN_STRING, &value, NULL);
@@ -2940,7 +2940,7 @@ char * APIENTRY binn_map_str(void *map, int id) {
   return value;
 }
 
-void * APIENTRY binn_map_blob(void *map, int id, int *psize) {
+void * APIENTRY binn_map_blob(const void *map, int id, int *psize) {
   void *value;
 
   binn_map_get(map, id, BINN_BLOB, &value, psize);
@@ -2948,7 +2948,7 @@ void * APIENTRY binn_map_blob(void *map, int id, int *psize) {
   return value;
 }
 
-void * APIENTRY binn_map_list(void *map, int id) {
+void * APIENTRY binn_map_list(const void *map, int id) {
   void *value;
 
   binn_map_get(map, id, BINN_LIST, &value, NULL);
@@ -2956,7 +2956,7 @@ void * APIENTRY binn_map_list(void *map, int id) {
   return value;
 }
 
-void * APIENTRY binn_map_map(void *map, int id) {
+void * APIENTRY binn_map_map(const void *map, int id) {
   void *value;
 
   binn_map_get(map, id, BINN_MAP, &value, NULL);
@@ -2964,7 +2964,7 @@ void * APIENTRY binn_map_map(void *map, int id) {
   return value;
 }
 
-void * APIENTRY binn_map_object(void *map, int id) {
+void * APIENTRY binn_map_object(const void *map, int id) {
   void *value;
 
   binn_map_get(map, id, BINN_OBJECT, &value, NULL);
@@ -2974,7 +2974,7 @@ void * APIENTRY binn_map_object(void *map, int id) {
 
 /***************************************************************************/
 
-signed char APIENTRY binn_object_int8(void *obj, const char *key) {
+signed char APIENTRY binn_object_int8(const void *obj, const char *key) {
   signed char value;
 
   binn_object_get(obj, key, BINN_INT8, &value, NULL);
@@ -2982,7 +2982,7 @@ signed char APIENTRY binn_object_int8(void *obj, const char *key) {
   return value;
 }
 
-short APIENTRY binn_object_int16(void *obj, const char *key) {
+short APIENTRY binn_object_int16(const void *obj, const char *key) {
   short value;
 
   binn_object_get(obj, key, BINN_INT16, &value, NULL);
@@ -2990,7 +2990,7 @@ short APIENTRY binn_object_int16(void *obj, const char *key) {
   return value;
 }
 
-int APIENTRY binn_object_int32(void *obj, const char *key) {
+int APIENTRY binn_object_int32(const void *obj, const char *key) {
   int value;
 
   binn_object_get(obj, key, BINN_INT32, &value, NULL);
@@ -2998,7 +2998,7 @@ int APIENTRY binn_object_int32(void *obj, const char *key) {
   return value;
 }
 
-int64 APIENTRY binn_object_int64(void *obj, const char *key) {
+int64 APIENTRY binn_object_int64(const void *obj, const char *key) {
   int64 value;
 
   binn_object_get(obj, key, BINN_INT64, &value, NULL);
@@ -3006,7 +3006,7 @@ int64 APIENTRY binn_object_int64(void *obj, const char *key) {
   return value;
 }
 
-unsigned char APIENTRY binn_object_uint8(void *obj, const char *key) {
+unsigned char APIENTRY binn_object_uint8(const void *obj, const char *key) {
   unsigned char value;
 
   binn_object_get(obj, key, BINN_UINT8, &value, NULL);
@@ -3014,7 +3014,7 @@ unsigned char APIENTRY binn_object_uint8(void *obj, const char *key) {
   return value;
 }
 
-unsigned short APIENTRY binn_object_uint16(void *obj, const char *key) {
+unsigned short APIENTRY binn_object_uint16(const void *obj, const char *key) {
   unsigned short value;
 
   binn_object_get(obj, key, BINN_UINT16, &value, NULL);
@@ -3022,7 +3022,7 @@ unsigned short APIENTRY binn_object_uint16(void *obj, const char *key) {
   return value;
 }
 
-unsigned int APIENTRY binn_object_uint32(void *obj, const char *key) {
+unsigned int APIENTRY binn_object_uint32(const void *obj, const char *key) {
   unsigned int value;
 
   binn_object_get(obj, key, BINN_UINT32, &value, NULL);
@@ -3030,7 +3030,7 @@ unsigned int APIENTRY binn_object_uint32(void *obj, const char *key) {
   return value;
 }
 
-uint64 APIENTRY binn_object_uint64(void *obj, const char *key) {
+uint64 APIENTRY binn_object_uint64(const void *obj, const char *key) {
   uint64 value;
 
   binn_object_get(obj, key, BINN_UINT64, &value, NULL);
@@ -3038,7 +3038,7 @@ uint64 APIENTRY binn_object_uint64(void *obj, const char *key) {
   return value;
 }
 
-float APIENTRY binn_object_float(void *obj, const char *key) {
+float APIENTRY binn_object_float(const void *obj, const char *key) {
   float value;
 
   binn_object_get(obj, key, BINN_FLOAT32, &value, NULL);
@@ -3046,7 +3046,7 @@ float APIENTRY binn_object_float(void *obj, const char *key) {
   return value;
 }
 
-double APIENTRY binn_object_double(void *obj, const char *key) {
+double APIENTRY binn_object_double(const void *obj, const char *key) {
   double value;
 
   binn_object_get(obj, key, BINN_FLOAT64, &value, NULL);
@@ -3054,7 +3054,7 @@ double APIENTRY binn_object_double(void *obj, const char *key) {
   return value;
 }
 
-BOOL APIENTRY binn_object_bool(void *obj, const char *key) {
+BOOL APIENTRY binn_object_bool(const void *obj, const char *key) {
   BOOL value;
 
   binn_object_get(obj, key, BINN_BOOL, &value, NULL);
@@ -3062,13 +3062,13 @@ BOOL APIENTRY binn_object_bool(void *obj, const char *key) {
   return value;
 }
 
-BOOL APIENTRY binn_object_null(void *obj, const char *key) {
+BOOL APIENTRY binn_object_null(const void *obj, const char *key) {
 
   return binn_object_get(obj, key, BINN_NULL, NULL, NULL);
 
 }
 
-char * APIENTRY binn_object_str(void *obj, const char *key) {
+char * APIENTRY binn_object_str(const void *obj, const char *key) {
   char *value;
 
   binn_object_get(obj, key, BINN_STRING, &value, NULL);
@@ -3076,7 +3076,7 @@ char * APIENTRY binn_object_str(void *obj, const char *key) {
   return value;
 }
 
-void * APIENTRY binn_object_blob(void *obj, const char *key, int *psize) {
+void * APIENTRY binn_object_blob(const void *obj, const char *key, int *psize) {
   void *value;
 
   binn_object_get(obj, key, BINN_BLOB, &value, psize);
@@ -3084,7 +3084,7 @@ void * APIENTRY binn_object_blob(void *obj, const char *key, int *psize) {
   return value;
 }
 
-void * APIENTRY binn_object_list(void *obj, const char *key) {
+void * APIENTRY binn_object_list(const void *obj, const char *key) {
   void *value;
 
   binn_object_get(obj, key, BINN_LIST, &value, NULL);
@@ -3092,7 +3092,7 @@ void * APIENTRY binn_object_list(void *obj, const char *key) {
   return value;
 }
 
-void * APIENTRY binn_object_map(void *obj, const char *key) {
+void * APIENTRY binn_object_map(const void *obj, const char *key) {
   void *value;
 
   binn_object_get(obj, key, BINN_MAP, &value, NULL);
@@ -3100,7 +3100,7 @@ void * APIENTRY binn_object_map(void *obj, const char *key) {
   return value;
 }
 
-void * APIENTRY binn_object_object(void *obj, const char *key) {
+void * APIENTRY binn_object_object(const void *obj, const char *key) {
   void *value;
 
   binn_object_get(obj, key, BINN_OBJECT, &value, NULL);
