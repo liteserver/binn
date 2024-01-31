@@ -280,16 +280,15 @@ BOOL APIENTRY binn_create(binn *item, int type, int size, void *pointer) {
 
   if (pointer) {
     item->pre_allocated = TRUE;
-    item->pbuf = pointer;
-    item->alloc_size = size;
   } else {
     item->pre_allocated = FALSE;
     if (size == 0) size = CHUNK_SIZE;
     pointer = binn_malloc(size);
     if (pointer == 0) return INVALID_BINN;
-    item->pbuf = pointer;
-    item->alloc_size = size;
   }
+
+  item->pbuf = pointer;
+  item->alloc_size = size;
 
   item->header = BINN_MAGIC;
   //item->allocated = FALSE;   -- already zeroed

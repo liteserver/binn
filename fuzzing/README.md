@@ -17,5 +17,5 @@ To fuzz the decoder:
 To fuzz the encoder:
 
 ```
-./fuzz_encoder samples
+./fuzz_encoder
 ```
