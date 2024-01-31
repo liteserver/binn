@@ -1243,18 +1243,6 @@ BINN_PRIVATE BOOL IsValidBinnHeader(const void *pbuf, int *ptype, int *pcount, i
   }
   count = int32;
 
-#if 0
-  // get the size
-  copy_be32((u32*)&size, (u32*)p);
-  size &= 0x7FFFFFFF;
-  p+=4;
-
-  // get the count
-  copy_be32((u32*)&count, (u32*)p);
-  count &= 0x7FFFFFFF;
-  p+=4;
-#endif
-
   if (size < MIN_BINN_SIZE || count < 0) return FALSE;
 
   // return the values
@@ -1374,7 +1362,8 @@ int APIENTRY binn_count(const void *ptr) {
 
 /***************************************************************************/
 
-BOOL APIENTRY binn_is_valid_ex(const void *ptr, int *ptype, int *pcount, int *psize) {
+// the container can be smaller than the informed size
+BINN_PRIVATE BOOL binn_is_valid_ex2(const void *ptr, int *ptype, int *pcount, int *psize) {
   int  i, type, count, size, header_size;
   unsigned char *p, *plimit, *base, len;
 
@@ -1391,8 +1380,8 @@ BOOL APIENTRY binn_is_valid_ex(const void *ptr, int *ptype, int *pcount, int *ps
 
   // is there an informed size?
   if (psize && *psize > 0) {
-    // is it the same as the one in the buffer?
-    if (size != *psize) return FALSE;
+    // is it bigger than the buffer?
+    if (size > *psize) return FALSE;
   }
   // is there an informed count?
   if (pcount && *pcount > 0) {
@@ -1433,20 +1422,51 @@ BOOL APIENTRY binn_is_valid_ex(const void *ptr, int *ptype, int *pcount, int *ps
       default:
         goto Invalid;
     }
-    // advance over the entire value
-    // TODO: recursive check
-    p = AdvanceDataPos(p, plimit);
-    if (p == 0 || p < base) goto Invalid;
+    // check the value
+    if (p > plimit) goto Invalid;
+    if ((*p & BINN_STORAGE_MASK) == BINN_STORAGE_CONTAINER) {
+      // recursively check the internal container
+      int size2 = plimit - p + 1;  // maximum container size
+      if (binn_is_valid_ex2(p, NULL, NULL, &size2) == FALSE) goto Invalid;
+      p += size2;
+    } else {
+      // advance over the value
+      p = AdvanceDataPos(p, plimit);
+      if (p == 0 || p < base) goto Invalid;
+    }
   }
 
-  if (ptype  && *ptype==0)  *ptype  = type;
+  if (ptype  && *ptype==0) *ptype = type;
   if (pcount && *pcount==0) *pcount = count;
-  if (psize  && *psize==0)  *psize  = size;
+  if (psize) *psize = size;
   return TRUE;
 
 Invalid:
   return FALSE;
 
+}
+
+// the container must have the informed size, if informed
+BOOL APIENTRY binn_is_valid_ex(const void *ptr, int *ptype, int *pcount, int *psize) {
+  int size;
+
+  if (psize && *psize > 0) {
+    size = *psize;
+  } else {
+    size = 0;
+  }
+
+  if (binn_is_valid_ex2(ptr, ptype, pcount, &size) == FALSE) return FALSE;
+
+  if (psize) {
+    if (*psize > 0) {
+      if (size != *psize) return FALSE;
+    } else if (*psize==0) {
+      *psize = size;
+    }
+  }
+
+  return TRUE;
 }
 
 /***************************************************************************/
