@@ -3340,11 +3340,11 @@ BOOL APIENTRY binn_get_int32(binn *value, int *pint) {
 
   switch (value->type) {
   case BINN_FLOAT:
-    if (value->vfloat < INT32_MIN || value->vfloat > INT32_MAX) return FALSE;
+    if (value->vfloat < (float)INT32_MIN || value->vfloat > (float)INT32_MAX) return FALSE;
     *pint = roundval(value->vfloat);
     break;
   case BINN_DOUBLE:
-    if (value->vdouble < INT32_MIN || value->vdouble > INT32_MAX) return FALSE;
+    if (value->vdouble < (double)INT32_MIN || value->vdouble > (double)INT32_MAX) return FALSE;
     *pint = roundval(value->vdouble);
     break;
   case BINN_STRING:
@@ -3377,11 +3377,11 @@ BOOL APIENTRY binn_get_int64(binn *value, int64 *pint) {
 
   switch (value->type) {
   case BINN_FLOAT:
-    if (value->vfloat < INT64_MIN || value->vfloat > INT64_MAX) return FALSE;
+    if (value->vfloat < (float)INT64_MIN || value->vfloat > (float)INT64_MAX) return FALSE;
     *pint = roundval(value->vfloat);
     break;
   case BINN_DOUBLE:
-    if (value->vdouble < INT64_MIN || value->vdouble > INT64_MAX) return FALSE;
+    if (value->vdouble < (double)INT64_MIN || value->vdouble > (double)INT64_MAX) return FALSE;
     *pint = roundval(value->vdouble);
     break;
   case BINN_STRING:
