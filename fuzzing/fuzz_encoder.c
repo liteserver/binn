@@ -96,7 +96,8 @@ static binn* create_list(const unsigned char *buf, unsigned int len) {
       // the value can be up to 16-bit size
       if (len < 2) goto done;
       value_size = *(unsigned short*)buf;
-      value = (char*)malloc(value_size); // random content
+      value = (char*)malloc(value_size+1); // random content
+      value[value_size] = 0; // null terminator
       binn_list_add_str(list, value);
       free(value);
       buf += 2; len -= 2;
@@ -208,7 +209,8 @@ static binn* create_map(const unsigned char *buf, unsigned int len) {
       // the value can be up to 16-bit size
       if (len < 2) goto done;
       value_size = *(unsigned short*)buf;
-      value = (char*)malloc(value_size); // random content
+      value = (char*)malloc(value_size+1); // random content
+      value[value_size] = 0; // null terminator
       binn_map_set_str(map, key, value);
       free(value);
       buf += 2; len -= 2;
@@ -325,7 +327,8 @@ static binn* create_object(const unsigned char *buf, unsigned int len) {
       // the value can be up to 16-bit size
       if (len < 2) goto done;
       value_size = *(unsigned short*)buf;
-      value = (char*)malloc(value_size); // random content
+      value = (char*)malloc(value_size+1); // random content
+      value[value_size] = 0; // null terminator
       binn_object_set_str(obj, key, value);
       free(value);
       buf += 2; len -= 2;
