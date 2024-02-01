@@ -473,11 +473,11 @@ void * APIENTRY binn_object_read(const void *obj, const char *key, int *ptype, i
 
 // on stack
 BOOL APIENTRY binn_map_get_pair(const void *map, int pos, int *pid, binn *value);
-BOOL APIENTRY binn_object_get_pair(const void *obj, int pos, char *pkey, binn *value);  // must free the memory returned in the pkey
+BOOL APIENTRY binn_object_get_pair(const void *obj, int pos, char *pkey, binn *value);  // the key must be declared as: char key[256];
 
 // allocated
 binn * APIENTRY binn_map_pair(const void *map, int pos, int *pid);
-binn * APIENTRY binn_object_pair(const void *obj, int pos, char *pkey);  // must free the memory returned in the pkey
+binn * APIENTRY binn_object_pair(const void *obj, int pos, char *pkey);  // the key must be declared as: char key[256];
 
 // these 2 functions return a pointer to the value and the data type
 // they are thread-safe on big-endian devices
