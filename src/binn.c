@@ -1863,7 +1863,7 @@ void * APIENTRY binn_object_read_pair(const void *ptr, int pos, char *pkey, int 
 /*** SEQUENTIAL READ FUNCTIONS *********************************************/
 /***************************************************************************/
 
-BOOL APIENTRY binn_iter_init(binn_iter *iter, void *ptr, int expected_type) {
+BOOL APIENTRY binn_iter_init(binn_iter *iter, const void *ptr, int expected_type) {
   int  type, count, size=0, header_size;
 
   ptr = binn_ptr(ptr);

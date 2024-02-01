@@ -497,7 +497,7 @@ typedef struct binn_iter_struct {
     int   current;
 } binn_iter;
 
-BOOL   APIENTRY binn_iter_init(binn_iter *iter, void *pbuf, int type);
+BOOL   APIENTRY binn_iter_init(binn_iter *iter, const void *pbuf, int type);
 
 // allocated
 binn * APIENTRY binn_list_next_value(binn_iter *iter);
