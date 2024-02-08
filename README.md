@@ -214,6 +214,28 @@ The current version (3.0) is stable and production ready
 As it is cross-platform, data can be transferred between little-endian and big-endian devices
 
 
+Security
+--------
+
+For performance reasons, the read functions do not fully check the integrity of the buffer
+
+So it is highly recommended to check the buffer integrity once data is received from the network or read from a file
+
+Apart from checking for a valid buffer, we recommend to discard messages smaller than 4 bytes, despite messages with just
+3 bytes (an empty list) being valid. This is due to a bug that was introduced when making the serialization smaller.
+
+Here is an example of check to use:
+
+```c
+void on_new_message(char *msg, int size) {
+  /* discard invalid messages */
+  if (size < 4) return;
+  if (binn_is_valid_ex(msg, NULL, NULL, &size) == FALSE) return;
+  /* the message is valid */
+  ...
+```
+
+
 Licence
 -------
 Apache 2.0
