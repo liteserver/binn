@@ -7,11 +7,11 @@
 #ifndef BINN_H
 #define BINN_H
 
-#include <stddef.h>
-
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+#include <stddef.h>
 
 #define BINN_VERSION "3.0.0"  /* using semantic versioning */
 
