@@ -20,6 +20,10 @@ extern void* (*malloc_fn)(int len);
 extern void* (*realloc_fn)(void *ptr, int len);
 extern void  (*free_fn)(void *ptr);
 
+BINN_PRIVATE int CalcAllocation(int needed_size, int alloc_size);
+BINN_PRIVATE BOOL IsValidBinnHeader(const void *pbuf, int *ptype, int *pcount, int *psize, int *pheadersize);
+void test_binn2();
+
 /*************************************************************************************/
 
 void test_binn_version() {
@@ -1758,7 +1762,7 @@ void test3() {
   //assert(binn_ptr(&size) == NULL);
   //assert(binn_ptr(&count) == NULL);
 
-  assert(IsValidBinnHeader(NULL) == FALSE);
+  assert(IsValidBinnHeader(NULL,NULL,NULL,NULL,NULL) == FALSE);
 
   ptr = binn_ptr(obj);
   assert(ptr != NULL);
@@ -1901,7 +1905,7 @@ int main() {
 
   puts("\nStarting the unit/regression tests...\n");
 
-  printf("sizeof(binn) = %d\n\n", sizeof(binn));
+  printf("sizeof(binn) = %ld\n\n", sizeof(binn));
 
   test_binn_version();
 

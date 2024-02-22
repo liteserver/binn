@@ -292,8 +292,8 @@ char * test_create_object_2(int *psize) {
   assert(binn_object_set_int64(obj, "int64", -1234567890123) == TRUE);
 
   assert(binn_object_set_uint32(obj, "uint32", 123456) == TRUE);
-  assert(binn_object_set_int16(obj, "uint16", 60500) == TRUE);
-  assert(binn_object_set_int8(obj, "uint8", 250) == TRUE);
+  assert(binn_object_set_uint16(obj, "uint16", 60500) == TRUE);
+  assert(binn_object_set_uint8(obj, "uint8", 250) == TRUE);
   assert(binn_object_set_uint64(obj, "uint64", 1234567890123) == TRUE);
 
   assert(binn_object_set_float(obj, "float32", -12.345) == TRUE);
