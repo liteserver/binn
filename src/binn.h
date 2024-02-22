@@ -11,6 +11,8 @@
 extern "C" {
 #endif
 
+#include <stddef.h>
+
 #define BINN_VERSION "3.0.0"  /* using semantic versioning */
 
 #ifndef NULL
