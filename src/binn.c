@@ -540,7 +540,7 @@ BINN_PRIVATE int get_storage_size(int storage_type) {
 /***************************************************************************/
 
 BINN_PRIVATE unsigned char * AdvanceDataPos(unsigned char *p, unsigned char *plimit) {
-  unsigned char byte;
+  unsigned char byte, *p0 = p;
   int  storage_type, DataSize;
 
   if (p > plimit) return 0;
@@ -590,12 +590,19 @@ BINN_PRIVATE unsigned char * AdvanceDataPos(unsigned char *p, unsigned char *pli
       copy_be32((u32*)&DataSize, (u32*)p);
       DataSize &= 0x7FFFFFFF;
     }
+    if (DataSize < 1) return 0;
     DataSize--;  // remove the type byte already added before
     p += DataSize;
     break;
   default:
     return 0;
   }
+
+  // the advanced pointer is never dereferenced here; a single check keeps it
+  // from escaping the buffer. one-past-the-end is a valid final position,
+  // and p < p0 catches pointer wrap-around on 32-bit (p + DataSize can
+  // overflow a 32-bit pointer and land below the buffer)
+  if (p < p0 || p > plimit + 1) return 0;
 
   return p;
 
