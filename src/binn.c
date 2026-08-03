@@ -1559,7 +1559,12 @@ BINN_PRIVATE BOOL GetValue(unsigned char *p, unsigned char *plimit, binn *value)
     } else {
       p++;
     }
-    if (p + DataSize - 1 > plimit) return FALSE;
+    if (storage_type == BINN_STORAGE_STRING) {
+      // strings are null-terminated; the terminator must be inside the buffer
+      if (DataSize > plimit - p) return FALSE;
+    } else {
+      if (DataSize - 1 > plimit - p) return FALSE;
+    }
     value->size = DataSize;
     value->ptr = p;
     break;
