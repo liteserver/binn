@@ -1742,8 +1742,8 @@ BINN_PRIVATE BOOL binn_read_pair(int expected_type, const void *ptr, int pos, in
         id = int32;
         break;
       case BINN_OBJECT:
-        len = *((unsigned char *)p); p++;
         if (p > plimit) return FALSE;
+        len = *((unsigned char *)p); p++;
         key = p;
         p += len;
         if (p > plimit) return FALSE;
@@ -1925,6 +1925,7 @@ BINN_PRIVATE BOOL binn_read_next_pair(int expected_type, binn_iter *iter, int *p
       if (pid) *pid = id;
       break;
     case BINN_OBJECT:
+      if (p > iter->plimit) return FALSE;
       len = *((unsigned char *)p); p++;
       key = p;
       p += len;
