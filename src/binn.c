@@ -667,7 +667,9 @@ BINN_PRIVATE int read_map_id(unsigned char **pp, unsigned char *plimit) {
     return 0;
   }
 
-  if (sign) id = -id;
+  // The 0xE0 form takes the id straight from the buffer, so it can be INT_MIN.
+  // Negating that is undefined, so negate through the unsigned type.
+  if (sign) id = (int) (0u - (unsigned int) id);
 
   *pp = p;
 
@@ -801,6 +803,7 @@ BINN_PRIVATE BOOL binn_object_set_raw(binn *item, const char *key, int type, voi
 
 BINN_PRIVATE BOOL binn_map_set_raw(binn *item, int id, int type, void *pvalue, int size) {
   unsigned char *base, *p, sign;
+  unsigned int uid;
   int id_size;
 
   if (item == NULL || item->type != BINN_MAP || item->writable == FALSE) return FALSE;
@@ -815,26 +818,27 @@ BINN_PRIVATE BOOL binn_map_set_raw(binn *item, int id, int type, void *pvalue, i
 
   p = base = ((unsigned char *) item->pbuf) + item->used_size;
 
+  // Magnitude in unsigned: negating INT_MIN would overflow and then compare as a
+  // negative, selecting the wrong encoding below.
   sign = (id < 0);
-  if (sign) id = -id;
+  uid = sign ? (0u - (unsigned int) id) : (unsigned int) id;
 
-  if (id <= 0x3F) {
-    *p++ = (sign << 6) | id;
-  } else if (id <= 0xFFF) {
-    *p++ = 0x80 | (sign << 4) | ((id & 0xF00) >> 8);
-    *p++ = id & 0xFF;
-  } else if (id <= 0xFFFFF) {
-    *p++ = 0xA0 | (sign << 4) | ((id & 0xF0000) >> 16);
-    *p++ = (id & 0xFF00) >> 8;
-    *p++ = id & 0xFF;
-  } else if (id <= 0xFFFFFFF) {
-    *p++ = 0xC0 | (sign << 4) | ((id & 0xF000000) >> 24);
-    *p++ = (id & 0xFF0000) >> 16;
-    *p++ = (id & 0xFF00) >> 8;
-    *p++ = id & 0xFF;
+  if (uid <= 0x3F) {
+    *p++ = (sign << 6) | uid;
+  } else if (uid <= 0xFFF) {
+    *p++ = 0x80 | (sign << 4) | ((uid & 0xF00) >> 8);
+    *p++ = uid & 0xFF;
+  } else if (uid <= 0xFFFFF) {
+    *p++ = 0xA0 | (sign << 4) | ((uid & 0xF0000) >> 16);
+    *p++ = (uid & 0xFF00) >> 8;
+    *p++ = uid & 0xFF;
+  } else if (uid <= 0xFFFFFFF) {
+    *p++ = 0xC0 | (sign << 4) | ((uid & 0xF000000) >> 24);
+    *p++ = (uid & 0xFF0000) >> 16;
+    *p++ = (uid & 0xFF00) >> 8;
+    *p++ = uid & 0xFF;
   } else {
     *p++ = 0xE0;
-    if (sign) id = -id;
     copy_be32((u32*)p, (u32*)&id);
     p += 4;
   }
