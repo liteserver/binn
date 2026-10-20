@@ -123,6 +123,7 @@ You can find more usage examples [here](usage.md) and in the [examples folder](e
  * F#: [meeron/FSBinn](https://github.com/meeron/FSBinn)
  * Rust: [Binn IR](https://lib.rs/crates/binn-ir)
  * Go: [et-nik/binngo](https://github.com/et-nik/binngo)
+ * Alternative `C` implementation [Softmotions/binn-c](https://github.com/Softmotions/binn-c)
 
 Feel free to make a wrapper for your preferred language. Then inform us so we can list it here.
 
